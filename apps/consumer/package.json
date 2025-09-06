@@ -1,5 +1,5 @@
 {
-  "name": "packages",
+  "name": "consumer",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -8,8 +8,5 @@
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "redis": "^5.8.2"
   }
 }

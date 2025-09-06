@@ -1,4 +1,4 @@
-# packages
+# redis
 
 To install dependencies:
 
