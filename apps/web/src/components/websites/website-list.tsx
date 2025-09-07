@@ -1,9 +1,7 @@
 'use client';
 
 import { Globe } from 'lucide-react';
-
-import type { WebsiteWithStatus } from '@/types/website';
-import { useWebsites } from '@/hooks/useWebsites';
+import { useWebsites } from '@/contexts/websites-context';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +34,7 @@ export function WebsiteList() {
     );
   }
 
-  if (error) {
+  if (error && websites.length === 0) {
     return (
       <Card className="border-4 border-border bg-card">
         <CardHeader className="border-b-4 border-border">
@@ -49,15 +47,27 @@ export function WebsiteList() {
         </CardHeader>
         <CardContent className="p-8">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-destructive border-4 border-border mx-auto flex items-center justify-center">
-              <Globe className="h-8 w-8 text-destructive-foreground" />
+            <div className="w-16 h-16 bg-muted border-4 border-border mx-auto flex items-center justify-center">
+              <Globe className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-card-foreground mb-2 font-sans tracking-tight">
-                ERROR LOADING WEBSITES
+                NO WEBSITES YET
               </h3>
-              <p className="text-muted-foreground font-sans">{error}</p>
+              <p className="text-muted-foreground font-sans">
+                Add your first website to start monitoring its uptime and performance.
+              </p>
             </div>
+            <AddWebsiteModal 
+              trigger={
+                <Button 
+                  size="lg"
+                  className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-bold px-8"
+                >
+                  ADD YOUR FIRST WEBSITE
+                </Button>
+              }
+            />
           </div>
         </CardContent>
       </Card>

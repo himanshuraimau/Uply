@@ -1,6 +1,7 @@
 'use client';
 
 import { WebsiteList } from '@/components/websites/website-list';
+import { WebsitesProvider } from '@/contexts/websites-context';
 
 export default function WebsitesPage() {
   return (
@@ -16,7 +17,9 @@ export default function WebsitesPage() {
       </div>
 
       {/* Websites List */}
-      <WebsiteList />
+      <WebsitesProvider>
+        <WebsiteList />
+      </WebsitesProvider>
     </div>
   );
 }

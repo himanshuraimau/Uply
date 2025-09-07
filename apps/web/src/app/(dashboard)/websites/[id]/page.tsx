@@ -1,71 +1,117 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ExternalLink, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 import { useAuth } from '@/contexts/auth-context';
 import { apiClient, ApiError } from '@/lib/api';
 import type { WebsiteWithStatus } from '@/types/website';
+import { useWebsites } from '@/contexts/websites-context';
+import { WebsitesProvider } from '@/contexts/websites-context';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusIndicator } from '@/components/websites/status-indicator';
 import { Loading } from '@/components/ui/loading';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
 
-export default function WebsiteDetailPage() {
+function WebsiteDetailPageContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { token } = useAuth();
+  const { websites, deleteWebsite } = useWebsites();
   const [website, setWebsite] = useState<WebsiteWithStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const websiteId = params.id as string;
+  
+  // Get return URL from search params
+  const returnUrl = searchParams.get('return') || '/websites';
+
+  // Watch for website being deleted from shared state
+  useEffect(() => {
+    if (!isLoading && website && !websites.find(w => w.id === websiteId)) {
+      // Website was deleted from shared state, redirect
+      console.log('Website deleted from shared state, redirecting to:', returnUrl);
+      router.push(returnUrl);
+    }
+  }, [websites, websiteId, website, isLoading, returnUrl, router]);
 
   useEffect(() => {
-    const fetchWebsiteDetails = async () => {
-      if (!token || !websiteId) return;
+    // Try to find website in shared state first
+    const foundWebsite = websites.find(w => w.id === websiteId);
+    
+    if (foundWebsite) {
+      setWebsite(foundWebsite);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // For now, we'll fetch all websites and find the specific one
-        // In a real app, you'd have a dedicated endpoint for single website details
-        const response = await apiClient.getWebsites(token);
-        const foundWebsite = response.websites.find((w: WebsiteWithStatus) => w.id === websiteId);
-        
-        if (!foundWebsite) {
-          setError('Website not found');
-          return;
+    // If not in shared state and we haven't loaded yet, fetch from API
+    if (isLoading) {
+      const fetchWebsiteDetails = async () => {
+        if (!token || !websiteId) return;
+
+        try {
+          setError(null);
+          
+          const response = await apiClient.getWebsites(token);
+          const apiWebsite = response.websites.find((w: WebsiteWithStatus) => w.id === websiteId);
+          
+          if (!apiWebsite) {
+            setError('Website not found');
+            return;
+          }
+          
+          setWebsite(apiWebsite);
+        } catch (error) {
+          const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch website details';
+          setError(errorMessage);
+          toast.error(errorMessage);
+        } finally {
+          setIsLoading(false);
         }
-        
-        setWebsite(foundWebsite);
-      } catch (error) {
-        const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch website details';
-        setError(errorMessage);
-        toast.error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      };
 
-    fetchWebsiteDetails();
-  }, [token, websiteId]);
+      fetchWebsiteDetails();
+    }
+  }, [websites, websiteId, token, isLoading]);
 
   const handleDelete = async () => {
-    if (!website || !token) return;
+    if (!website) return;
+
+    console.log('Starting delete process...');
 
     try {
-      await apiClient.deleteWebsite(website.id, token);
-      toast.success(`Website ${website.url} removed successfully!`);
-      router.push('/websites');
+      setIsDeleting(true);
+      console.log('Calling deleteWebsite...');
+      await deleteWebsite(website.id, website.url);
+      console.log('Delete successful');
+      
+      // Close dialog - the useEffect will handle redirect when website disappears from state
+      setShowDeleteDialog(false);
+      
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete website';
-      toast.error(errorMessage);
+      // Error is handled by the hook
+      console.error('Delete website error:', error);
+      setShowDeleteDialog(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -145,14 +191,52 @@ export default function WebsiteDetailPage() {
               <ExternalLink className="h-4 w-4 mr-2" />
               VISIT
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleDelete}
-              className="border-4 border-border hover:bg-destructive hover:text-destructive-foreground font-semibold"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              DELETE
-            </Button>
+            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-4 border-border hover:bg-destructive hover:text-destructive-foreground font-semibold"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  DELETE
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="border-4 border-border bg-card max-w-md">
+                <DialogHeader className="border-b-4 border-border pb-4">
+                  <DialogTitle className="text-xl font-bold text-card-foreground font-sans tracking-tight">
+                    DELETE WEBSITE
+                  </DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                    This action cannot be undone. All monitoring data for this website will be permanently removed.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="pt-4 space-y-4">
+                  <p className="text-card-foreground font-sans">
+                    Are you sure you want to delete monitoring for{' '}
+                    <span className="font-bold">{website.url}</span>?
+                  </p>
+
+                  <div className="flex space-x-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteDialog(false)}
+                      className="flex-1 border-4 border-border hover:bg-muted font-semibold"
+                      disabled={isDeleting}
+                    >
+                      CANCEL
+                    </Button>
+                    <Button
+                      onClick={handleDelete}
+                      className="flex-1 border-4 border-border bg-destructive text-destructive-foreground hover:bg-destructive/80 font-bold"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'DELETING...' : 'DELETE'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
@@ -265,5 +349,13 @@ export default function WebsiteDetailPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function WebsiteDetailPage() {
+  return (
+    <WebsitesProvider>
+      <WebsiteDetailPageContent />
+    </WebsitesProvider>
   );
 }

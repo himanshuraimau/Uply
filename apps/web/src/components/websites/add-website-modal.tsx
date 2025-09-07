@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
 
 import { websiteSchema, type WebsiteFormData } from '@/lib/validations';
-import { useWebsites } from '@/hooks/useWebsites';
+import { useWebsites } from '@/contexts/websites-context';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

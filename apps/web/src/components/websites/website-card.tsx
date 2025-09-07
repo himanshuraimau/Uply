@@ -6,7 +6,7 @@ import { Trash2, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 import type { WebsiteWithStatus } from '@/types/website';
-import { useWebsites } from '@/hooks/useWebsites';
+import { useWebsites } from '@/contexts/websites-context';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,10 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
   };
 
   const handleCardClick = () => {
-    router.push(`/websites/${website.id}`);
+    // Get current path to know where to return after delete
+    const currentPath = window.location.pathname;
+    const returnUrl = currentPath.includes('/dashboard') ? '/dashboard' : '/websites';
+    router.push(`/websites/${website.id}?return=${encodeURIComponent(returnUrl)}`);
   };
 
   const getUptimeColor = (uptime?: number) => {

@@ -30,7 +30,6 @@ export const metadata: Metadata = {
     "performance tracking",
   ],
   authors: [{ name: "Uply Team" }],
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
