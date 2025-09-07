@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { prisma } from "store/client";
 import { AuthInputSchema, WebsiteInputSchema, PaginationSchema } from './types';
 import jwt from 'jsonwebtoken';
@@ -8,6 +9,16 @@ import type { NextFunction, Request, Response } from 'express';
 
 
 const app = express();
+
+// Enable CORS for all origins in development
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+        ? ['https://your-frontend-domain.com'] // Replace with your production domain
+        : ['http://localhost:3000', 'http://localhost:3001'], // Allow local development
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 

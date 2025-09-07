@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/auth-context";
+import { Toaster } from "react-hot-toast";
 
 // Vercel-inspired Typography Setup
 const inter = Inter({
@@ -46,7 +48,33 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AuthProvider>
+            {children}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'hsl(var(--card))',
+                  color: 'hsl(var(--card-foreground))',
+                  border: '4px solid hsl(var(--border))',
+                  borderRadius: '0',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: '600',
+                },
+                success: {
+                  style: {
+                    border: '4px solid hsl(var(--primary))',
+                  },
+                },
+                error: {
+                  style: {
+                    border: '4px solid hsl(var(--destructive))',
+                  },
+                },
+              }}
+            />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

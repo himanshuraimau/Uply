@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -11,13 +12,20 @@ export default function Home() {
             <div className="w-8 h-8 bg-primary border-4 border-border"></div>
             <h1 className="text-2xl font-bold text-foreground font-sans tracking-tight">UPLY</h1>
           </div>
-          <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <Button variant="outline" className="border-4 border-border hover:bg-primary hover:text-primary-foreground font-semibold">
-              LOGIN
+            <Button 
+              variant="outline" 
+              className="border-4 border-border hover:bg-primary hover:text-primary-foreground font-semibold"
+              asChild
+            >
+              <Link href="/login">LOGIN</Link>
             </Button>
-            <Button className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-semibold">
-              GET STARTED
+            <Button 
+              className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-semibold"
+              asChild
+            >
+              <Link href="/signup">GET STARTED</Link>
             </Button>
           </div>
         </div>
@@ -41,12 +49,14 @@ export default function Home() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground px-8 py-4 text-lg font-semibold"
-              >
-                START MONITORING FREE
-              </Button>
+              <Link href="/signup">
+                <Button 
+                  size="lg" 
+                  className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground px-8 py-4 text-lg font-semibold"
+                >
+                  START MONITORING FREE
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 size="lg"
@@ -205,8 +215,9 @@ export default function Home() {
           <Button 
             size="lg"
             className="border-4 border-border bg-background text-foreground hover:bg-foreground hover:text-background px-12 py-6 text-xl font-semibold"
+            asChild
           >
-            GET STARTED FOR FREE
+            <Link href="/signup">GET STARTED FOR FREE</Link>
           </Button>
         </div>
       </section>
