@@ -1,25 +1,25 @@
-import * as React from "react"
+import type * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold uppercase letter-spacing-wide transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-yellow-500 border-4 border-solid",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium uppercase tracking-wide transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-ring border-4 border-solid",
   {
     variants: {
       variant: {
         default:
-          "bg-black text-white border-black hover:bg-yellow-500 hover:border-yellow-500 hover:text-black",
+          "bg-foreground text-background border-border hover:bg-primary hover:border-primary hover:text-primary-foreground",
         destructive:
-          "bg-red-600 text-white border-red-600 hover:bg-red-700 hover:border-red-700",
+          "bg-destructive text-destructive-foreground border-border hover:bg-destructive/90 hover:border-destructive",
         outline:
-          "border-black bg-white text-black hover:bg-yellow-500 hover:text-black hover:border-yellow-500",
+          "border-border bg-background text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary",
         secondary:
-          "bg-gray-100 text-black border-gray-100 hover:bg-gray-200 hover:border-gray-200",
+          "bg-secondary text-secondary-foreground border-border hover:bg-secondary/80 hover:border-secondary",
         ghost:
-          "border-transparent hover:bg-yellow-500 hover:text-black hover:border-yellow-500",
-        link: "text-black underline-offset-4 hover:underline border-transparent",
+          "border-transparent hover:bg-primary hover:text-primary-foreground hover:border-primary",
+        link: "text-foreground underline-offset-4 hover:underline border-transparent",
       },
       size: {
         default: "h-10 px-4 py-2 has-[>svg]:px-3",

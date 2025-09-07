@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
-// Neo-Brutalist Typography Setup
+// Vercel-inspired Typography Setup
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700", "900"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Uply - Website Monitoring",
-  description: "Monitor your websites' uptime and performance across multiple regions. Get instant alerts when your sites go down.",
-  keywords: ["website monitoring", "uptime monitoring", "site monitoring", "performance tracking"],
+  description:
+    "Monitor your websites' uptime and performance across multiple regions. Get instant alerts when your sites go down.",
+  keywords: [
+    "website monitoring",
+    "uptime monitoring",
+    "site monitoring",
+    "performance tracking",
+  ],
   authors: [{ name: "Uply Team" }],
   viewport: "width=device-width, initial-scale=1",
 };
@@ -35,11 +36,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} font-sans antialiased h-full bg-background text-foreground`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased h-full bg-background text-foreground`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

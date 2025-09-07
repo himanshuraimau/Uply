@@ -1,125 +1,103 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Neo-Brutalist Theme for Uply */
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  /* Neo-Brutalist Color System */
-  --background: 0 0% 100%;           /* Pure white */
-  --foreground: 0 0% 9%;             /* Near black text */
-  
-  /* Primary Colors - Near black/white contrast */
-  --primary: 0 0% 9%;                /* Near black */
-  --primary-foreground: 0 0% 98%;    /* Near white */
-  
-  /* Secondary Colors - Light gray system */
-  --secondary: 0 0% 96%;             /* Light gray */
-  --secondary-foreground: 0 0% 9%;   /* Dark text */
-  
-  /* Accent Colors - Brutal yellow */
-  --accent: 47 100% 50%;             /* Brutal yellow */
-  --accent-foreground: 0 0% 9%;      /* Dark text */
-  
-  /* Destructive/Alert Colors - Bold red */
-  --destructive: 0 84% 60%;          /* Bold red */
-  --destructive-foreground: 0 0% 98%; /* White text */
-  
-  /* Border and UI Elements */
-  --border: 0 0% 9%;                 /* Dark border */
-  --input: 0 0% 9%;                  /* Dark input border */
-  --ring: 0 0% 9%;                   /* Focus ring */
-  
-  /* Card and Surface Colors */
-  --card: 0 0% 100%;                 /* Pure white */
-  --card-foreground: 0 0% 9%;        /* Near black text */
-  --popover: 0 0% 100%;              /* Pure white */
-  --popover-foreground: 0 0% 9%;     /* Near black text */
-  
-  /* Muted Elements */
-  --muted: 0 0% 96%;                 /* Light gray */
-  --muted-foreground: 0 0% 45%;      /* Medium gray text */
-  
-  /* Chart Colors for Data Visualization */
-  --chart-1: 0 0% 9%;                /* Primary black */
-  --chart-2: 47 100% 50%;            /* Brutal yellow */
-  --chart-3: 0 84% 60%;              /* Bold red */
-  --chart-4: 120 100% 25%;           /* Dark green */
-  --chart-5: 240 100% 50%;           /* Pure blue */
-  
-  /* Typography System */
-  --font-sans: Inter, system-ui, sans-serif;
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1.0000 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.6489 0.2370 26.9728);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9680 0.2110 109.7692);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.9551 0 0);
+  --muted-foreground: oklch(0.3211 0 0);
+  --accent: oklch(0.5635 0.2408 260.8178);
+  --accent-foreground: oklch(1.0000 0 0);
+  --destructive: oklch(0 0 0);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0 0 0);
+  --input: oklch(0 0 0);
+  --ring: oklch(0.6489 0.2370 26.9728);
+  --chart-1: oklch(0.6489 0.2370 26.9728);
+  --chart-2: oklch(0.9680 0.2110 109.7692);
+  --chart-3: oklch(0.5635 0.2408 260.8178);
+  --chart-4: oklch(0.7323 0.2492 142.4953);
+  --chart-5: oklch(0.5931 0.2726 328.3634);
+  --sidebar: oklch(0.9551 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0.6489 0.2370 26.9728);
+  --sidebar-primary-foreground: oklch(1.0000 0 0);
+  --sidebar-accent: oklch(0.5635 0.2408 260.8178);
+  --sidebar-accent-foreground: oklch(1.0000 0 0);
+  --sidebar-border: oklch(0 0 0);
+  --sidebar-ring: oklch(0.6489 0.2370 26.9728);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: "JetBrains Mono", "Courier New", monospace;
-  --font-display: "Space Grotesk", "Arial Black", sans-serif;
-  
-  /* Neo-Brutalist Spacing Scale */
-  --space-1: 0.25rem;    /* 4px */
-  --space-2: 0.5rem;     /* 8px */
-  --space-3: 0.75rem;    /* 12px */
-  --space-4: 1rem;       /* 16px */
-  --space-6: 1.5rem;     /* 24px */
-  --space-8: 2rem;       /* 32px */
-  --space-12: 3rem;      /* 48px */
-  --space-16: 4rem;      /* 64px */
-  --space-24: 6rem;      /* 96px */
-  
-  /* Typography Scale */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.875rem;   /* 14px */
-  --text-base: 1rem;     /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
-  --text-5xl: 3rem;      /* 48px */
-  --text-6xl: 3.75rem;   /* 60px */
-  
-  /* No border radius - sharp corners only */
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
   --radius: 0px;
-  
-  /* Neo-Brutalist Shadows - no subtle effects */
-  --shadow: none;
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
-  --shadow-2xl: none;
-  
-  /* Brutalist borders - thick and bold */
-  --border-width: 3px;
-  --border-width-thick: 4px;
+  --shadow-2xs: 4px 4px 0px 0px hsl(0 0% 0% / 0.50);
+  --shadow-xs: 4px 4px 0px 0px hsl(0 0% 0% / 0.50);
+  --shadow-sm: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 1px 2px -1px hsl(0 0% 0% / 1.00);
+  --shadow: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 1px 2px -1px hsl(0 0% 0% / 1.00);
+  --shadow-md: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 2px 4px -1px hsl(0 0% 0% / 1.00);
+  --shadow-lg: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 4px 6px -1px hsl(0 0% 0% / 1.00);
+  --shadow-xl: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 8px 10px -1px hsl(0 0% 0% / 1.00);
+  --shadow-2xl: 4px 4px 0px 0px hsl(0 0% 0% / 2.50);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
 }
 
-/* Dark mode support - keeping neo-brutalist approach */
 .dark {
-  --background: 0 0% 9%;             /* Dark background */
-  --foreground: 0 0% 98%;            /* Light text */
-  --primary: 0 0% 98%;               /* Light primary */
-  --primary-foreground: 0 0% 9%;     /* Dark text on light */
-  --secondary: 0 0% 15%;             /* Dark gray */
-  --secondary-foreground: 0 0% 98%;  /* Light text */
-  --accent: 47 100% 50%;             /* Keep brutal yellow */
-  --accent-foreground: 0 0% 9%;      /* Dark text */
-  --destructive: 0 84% 60%;          /* Keep bold red */
-  --destructive-foreground: 0 0% 98%; /* White text */
-  --border: 0 0% 98%;                /* Light borders in dark mode */
-  --input: 0 0% 98%;                 /* Light input borders */
-  --ring: 47 100% 50%;               /* Accent ring */
-  --card: 0 0% 9%;                   /* Dark cards */
-  --card-foreground: 0 0% 98%;       /* Light text */
-  --popover: 0 0% 9%;                /* Dark popover */
-  --popover-foreground: 0 0% 98%;    /* Light text */
-  --muted: 0 0% 15%;                 /* Dark muted */
-  --muted-foreground: 0 0% 70%;      /* Light muted text */
-  --chart-1: 0 0% 98%;               /* Light chart colors */
-  --chart-2: 47 100% 50%;            /* Brutal yellow */
-  --chart-3: 0 84% 60%;              /* Bold red */
-  --chart-4: 120 100% 40%;           /* Bright green */
-  --chart-5: 240 100% 60%;           /* Bright blue */
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.11 0.005 240);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.11 0.005 240);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.70 0.24 27);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.14 0.01 240);
+  --secondary-foreground: oklch(0.85 0 0);
+  --muted: oklch(0.13 0.01 240);
+  --muted-foreground: oklch(0.60 0 0);
+  --accent: oklch(0.58 0.22 260);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.62 0.28 20);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.18 0.01 240);
+  --input: oklch(0.11 0.005 240);
+  --ring: oklch(0.70 0.24 27);
+  --chart-1: oklch(0.70 0.24 27);
+  --chart-2: oklch(0.65 0.25 110);
+  --chart-3: oklch(0.58 0.22 260);
+  --chart-4: oklch(0.68 0.25 142);
+  --chart-5: oklch(0.60 0.25 328);
+  --sidebar: oklch(0.09 0.003 240);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.70 0.24 27);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.58 0.22 260);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.16 0.01 240);
+  --sidebar-ring: oklch(0.70 0.24 27);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  --radius: 0px;
+  --shadow-2xs: 4px 4px 0px 0px hsl(240 3% 6% / 0.90);
+  --shadow-xs: 4px 4px 0px 0px hsl(240 3% 6% / 0.90);
+  --shadow-sm: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 1px 2px -1px hsl(240 3% 6% / 0.95);
+  --shadow: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 1px 2px -1px hsl(240 3% 6% / 0.95);
+  --shadow-md: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 2px 4px -1px hsl(240 3% 6% / 0.95);
+  --shadow-lg: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 4px 6px -1px hsl(240 3% 6% / 0.95);
+  --shadow-xl: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 8px 10px -1px hsl(240 3% 6% / 0.95);
+  --shadow-2xl: 4px 4px 0px 0px hsl(240 3% 6% / 1.0);
 }
 
+/* biome-ignore lint/suspicious/noUnknownAtRules: <explanation> */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -145,144 +123,30 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
-  --font-display: var(--font-display);
 
-  /* Neo-Brutalist - no rounded corners */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 
-  /* No shadows in neo-brutalist design */
-  --shadow-2xs: none;
-  --shadow-xs: none;
-  --shadow-sm: none;
-  --shadow: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
-  --shadow-2xl: none;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  
-  body {
-    @apply bg-background text-foreground font-sans;
-    line-height: 1.5;
-  }
-  
-  /* Neo-Brutalist Typography */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-foreground;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-  }
-  
-  h1 {
-    @apply text-6xl;
-    font-weight: 900;
-  }
-  
-  h2 {
-    @apply text-5xl;
-    font-weight: 800;
-  }
-  
-  h3 {
-    @apply text-4xl;
-    font-weight: 700;
-  }
-  
-  h4 {
-    @apply text-3xl;
-    font-weight: 700;
-  }
-  
-  h5 {
-    @apply text-2xl;
-    font-weight: 600;
-  }
-  
-  h6 {
-    @apply text-xl;
-    font-weight: 600;
-  }
-  
-  /* Brutalist button reset */
-  button {
-    border-radius: 0;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  
-  /* Brutalist input styling */
-  input, textarea, select {
-    border-radius: 0;
-    border-width: 3px;
-    @apply border-border bg-background text-foreground;
-  }
-  
-  input:focus, textarea:focus, select:focus {
-    @apply ring-0 border-accent;
-    outline: none;
-  }
-  
-  /* Strong emphasis for neo-brutalist aesthetic */
-  strong, b {
-    font-weight: 900;
-  }
-  
-  /* Code blocks with mono font */
-  code, pre {
-    @apply font-mono;
-  }
-  
-  /* Remove default link styling */
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  /* Brutalist focus states */
-  *:focus-visible {
-    @apply ring-0 outline-4 outline-offset-2 outline-accent;
-  }
-}
-
-/* Neo-Brutalist Component Utilities */
-@layer utilities {
-  .brutalist-border {
-    border-width: 3px;
-    border-style: solid;
-    border-radius: 0;
-  }
-  
-  .brutalist-border-thick {
-    border-width: 4px;
-    border-style: solid;
-    border-radius: 0;
-  }
-  
-  .brutalist-shadow {
-    box-shadow: 4px 4px 0px 0px hsl(var(--foreground));
-  }
-  
-  .brutalist-shadow-accent {
-    box-shadow: 4px 4px 0px 0px hsl(var(--accent));
-  }
-  
-  .text-display {
-    font-family: var(--font-display);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
 }
