@@ -15,36 +15,46 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(uuid())
-  username String    @unique
-  password String
-  websites Website[]
+  id        String    @id @default(uuid())
+  username  String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  websites  Website[]
 }
 
 model Website {
   id        String        @id @default(uuid())
   url       String        @unique
-  timeAdded DateTime
+  timeAdded DateTime      @default(now())
+  isActive  Boolean       @default(true)
   ticks     WebsiteTick[]
-  user      User          @relation(fields: [user_id], references: [id])
+  user      User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id   String
+
+  @@index([user_id])
+  @@index([isActive])
 }
 
 model Region {
-  id    String        @id @default(uuid())
-  name  String        @unique
-  ticks WebsiteTick[]
+  id        String        @id @default(uuid())
+  name      String        @unique
+  createdAt DateTime      @default(now())
+  ticks     WebsiteTick[]
 }
 
 model WebsiteTick {
   id               String        @id @default(uuid())
   response_time_ms Int
   status           WebsiteStatus
-  website          Website       @relation(fields: [website_id], references: [id])
-  website_id        String
-  region           Region        @relation(fields: [region_id], references: [id])
-  region_id         String
+  website          Website       @relation(fields: [website_id], references: [id], onDelete: Cascade)
+  website_id       String
+  region           Region        @relation(fields: [region_id], references: [id], onDelete: Cascade)
+  region_id        String
   createdAt        DateTime      @default(now())
+
+  @@index([website_id, createdAt])
+  @@index([region_id, createdAt])
+  @@index([status, createdAt])
 }
 
 enum WebsiteStatus {
