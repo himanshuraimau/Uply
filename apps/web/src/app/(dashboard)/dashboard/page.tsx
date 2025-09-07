@@ -4,7 +4,6 @@ import { useDashboard } from '@/hooks/useDashboard';
 import { DashboardStatsComponent } from '@/components/dashboard/dashboard-stats';
 import { RecentActivity } from '@/components/dashboard/recent-activity';
 import { WebsiteList } from '@/components/websites/website-list';
-import { WebsitesProvider } from '@/contexts/websites-context';
 
 export default function DashboardPage() {
   const { dashboardData, isLoading } = useDashboard();
@@ -35,9 +34,7 @@ export default function DashboardPage() {
       />
 
       {/* Websites Section */}
-      <WebsitesProvider>
-        <WebsiteList />
-      </WebsitesProvider>
+      <WebsiteList />
 
       {/* Recent Activity */}
       <RecentActivity 

@@ -37,26 +37,37 @@ export async function xAddBulk(websites: WebsiteEvent[]) {
 
 export async function xReadGroup(consumerGroup: string, workerId: string) {
     try {
+        // Ensure consumer group exists
         try {
             await client.xGroupCreate(STREAM_NAME, consumerGroup, '0', {
                 MKSTREAM: true
             });
+            console.log(`✅ Consumer group created: ${consumerGroup}`);
         } catch (err: any) {
-            if (!err.message?.includes('BUSYGROUP')) {
+            if (err.message?.includes('BUSYGROUP')) {
+                // Consumer group already exists, this is normal
+            } else {
+                console.error(`❌ Failed to create consumer group ${consumerGroup}:`, err.message);
                 throw err;
             }
         }
-
         const response = await client.xReadGroup(
             consumerGroup, workerId,
             { key: STREAM_NAME, id: '>' },
             { COUNT: 10, BLOCK: 1000 } 
         );
         
+        // Response received from Redis
+        
         return response;
     } catch (error) {
-        console.error('Error in xReadGroup:', error);
-        return null;
+        console.error('❌ Error in xReadGroup:', {
+            error: error instanceof Error ? error.message : String(error),
+            consumerGroup,
+            workerId,
+            streamName: STREAM_NAME
+        });
+        throw error; // Re-throw to let consumer handle with backoff
     }
 }
 
@@ -74,16 +85,22 @@ export async function xAck(consumerGroup: string, eventId: string) {
 }
 
 export async function xAckBulk(consumerGroup: string, eventIds: string[]) {
-    if (eventIds.length === 0) return;
+    if (eventIds.length === 0) return 0;
     
     try {
         const response = await client.xAck(
             STREAM_NAME, consumerGroup, eventIds
         );
+        console.log(`✅ Acknowledged ${response}/${eventIds.length} messages`);
         return response;
     } catch (error) {
-        console.error('Error bulk acknowledging messages:', error);
-        return 0;
+        console.error('❌ Error bulk acknowledging messages:', {
+            error: error instanceof Error ? error.message : String(error),
+            consumerGroup,
+            eventIds: eventIds.slice(0, 5), // Log first 5 IDs for debugging
+            totalCount: eventIds.length
+        });
+        throw error; // Re-throw to let consumer handle the error
     }
 }
 export { client };

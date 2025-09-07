@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { prisma } from "store/client";
 import { AuthInputSchema, WebsiteInputSchema, PaginationSchema } from './types';
+import type { DashboardResponse, WebsiteWithStatus, ActivityItem } from './types';
 import jwt from 'jsonwebtoken';
 import { authMiddleware } from './middleware';
 import type { NextFunction, Request, Response } from 'express';
@@ -328,14 +329,6 @@ app.get('/dashboard', authMiddleware, async (req, res) => {
     try {
         const userId = (req as any).userId;
 
-        // Get total websites count
-        const totalWebsites = await prisma.website.count({
-            where: {
-                user_id: userId,
-                isActive: true
-            }
-        });
-
         // Get websites with their latest status
         const websites = await prisma.website.findMany({
             where: {
@@ -347,38 +340,88 @@ app.get('/dashboard', authMiddleware, async (req, res) => {
                     orderBy: { createdAt: 'desc' },
                     take: 1
                 }
-            }
+            },
+            orderBy: { timeAdded: 'desc' }
         });
 
+        // Transform websites to match frontend expectations
+        const transformedWebsites: WebsiteWithStatus[] = websites.map(website => ({
+            id: website.id,
+            url: website.url,
+            isActive: website.isActive,
+            createdAt: website.timeAdded.toISOString(),
+            updatedAt: website.timeAdded.toISOString(),
+            userId: website.user_id,
+            currentStatus: website.ticks[0] ? {
+                id: website.ticks[0].id,
+                websiteId: website.id,
+                status: website.ticks[0].status as 'UP' | 'DOWN',
+                responseTime: website.ticks[0].response_time_ms,
+                checkedAt: website.ticks[0].createdAt.toISOString(),
+                region: 'default'
+            } : undefined
+        }));
+
+        // Calculate stats
         let upCount = 0;
         let downCount = 0;
         let totalResponseTime = 0;
         let sitesWithData = 0;
 
-        websites.forEach(website => {
-            if (website.ticks.length > 0) {
-                const lastTick = website.ticks[0];
-                if (lastTick?.status === 'UP') {
+        transformedWebsites.forEach(website => {
+            if (website.currentStatus) {
+                if (website.currentStatus.status === 'UP') {
                     upCount++;
                 } else {
                     downCount++;
                 }
-                totalResponseTime += lastTick?.response_time_ms!;
+                totalResponseTime += website.currentStatus.responseTime;
                 sitesWithData++;
             }
         });
 
+        const totalWebsites = transformedWebsites.length;
         const avgResponseTime = sitesWithData > 0 ? Math.round(totalResponseTime / sitesWithData) : 0;
-        const uptimePercentage = totalWebsites > 0 ? Math.round((upCount / totalWebsites) * 100) : 0;
+        const uptime = totalWebsites > 0 ? Math.round((upCount / totalWebsites) * 100) : 100;
+        const incidents = downCount;
 
-        res.json({
-            totalWebsites,
-            upCount,
-            downCount,
-            uptimePercentage,
-            avgResponseTime,
-            lastUpdated: new Date().toISOString()
+        // Generate recent activity from recent website ticks
+        const recentTicks = await prisma.websiteTick.findMany({
+            where: {
+                website: {
+                    user_id: userId,
+                    isActive: true
+                }
+            },
+            include: {
+                website: true
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 10
         });
+
+        const recentActivity: ActivityItem[] = recentTicks.map(tick => ({
+            id: tick.id,
+            type: 'STATUS_CHANGE' as const,
+            websiteId: tick.website_id,
+            websiteUrl: tick.website.url,
+            message: `Website ${tick.website.url} is ${tick.status.toLowerCase()}`,
+            timestamp: tick.createdAt.toISOString(),
+            status: tick.status as 'UP' | 'DOWN'
+        }));
+
+        const dashboardResponse: DashboardResponse = {
+            stats: {
+                totalWebsites,
+                uptime,
+                avgResponseTime,
+                incidents
+            },
+            websites: transformedWebsites,
+            recentActivity
+        };
+
+        res.json(dashboardResponse);
     } catch (error) {
         console.error('Error fetching dashboard:', error);
         res.status(500).json({ error: "Failed to fetch dashboard data" });
@@ -511,4 +554,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`🚀 API Server is running on port ${PORT}`);
     console.log(`📊 Health check available at http://localhost:${PORT}/health`);
+    console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

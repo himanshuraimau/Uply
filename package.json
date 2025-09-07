@@ -4,13 +4,17 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "dev:api": "cd apps/api && bun run dev",
+    "dev:api": "bun --watch apps/api/index.ts",
     "dev:web": "cd apps/web && bun run dev",
+    "dev:producer": "bun --watch apps/producer/index.ts",
+    "dev:consumer": "bun --watch apps/consumer/index.ts",
+    "dev:all": "concurrently \"bun run dev:api\" \"bun run dev:web\" \"bun run dev:producer\" \"bun run dev:consumer\"",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "prettier": "^3.6.2",
     "turbo": "^2.5.4",
     "typescript": "5.8.3"

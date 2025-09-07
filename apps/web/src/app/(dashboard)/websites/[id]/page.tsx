@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { apiClient, ApiError } from '@/lib/api';
 import type { WebsiteWithStatus } from '@/types/website';
 import { useWebsites } from '@/contexts/websites-context';
-import { WebsitesProvider } from '@/contexts/websites-context';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +29,7 @@ function WebsiteDetailPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token } = useAuth();
-  const { websites, deleteWebsite } = useWebsites();
+  const { deleteWebsite } = useWebsites();
   const [website, setWebsite] = useState<WebsiteWithStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,69 +41,45 @@ function WebsiteDetailPageContent() {
   // Get return URL from search params
   const returnUrl = searchParams.get('return') || '/websites';
 
-  // Watch for website being deleted from shared state
   useEffect(() => {
-    if (!isLoading && website && !websites.find(w => w.id === websiteId)) {
-      // Website was deleted from shared state, redirect
-      console.log('Website deleted from shared state, redirecting to:', returnUrl);
-      router.push(returnUrl);
-    }
-  }, [websites, websiteId, website, isLoading, returnUrl, router]);
+    const fetchWebsiteDetails = async () => {
+      if (!token || !websiteId) return;
 
-  useEffect(() => {
-    // Try to find website in shared state first
-    const foundWebsite = websites.find(w => w.id === websiteId);
-    
-    if (foundWebsite) {
-      setWebsite(foundWebsite);
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
-
-    // If not in shared state and we haven't loaded yet, fetch from API
-    if (isLoading) {
-      const fetchWebsiteDetails = async () => {
-        if (!token || !websiteId) return;
-
-        try {
-          setError(null);
-          
-          const response = await apiClient.getWebsites(token);
-          const apiWebsite = response.websites.find((w: WebsiteWithStatus) => w.id === websiteId);
-          
-          if (!apiWebsite) {
-            setError('Website not found');
-            return;
-          }
-          
-          setWebsite(apiWebsite);
-        } catch (error) {
-          const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch website details';
-          setError(errorMessage);
-          toast.error(errorMessage);
-        } finally {
-          setIsLoading(false);
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await apiClient.getWebsites(token);
+        const apiWebsite = response.websites.find((w: WebsiteWithStatus) => w.id === websiteId);
+        
+        if (!apiWebsite) {
+          setError('Website not found');
+          return;
         }
-      };
+        
+        setWebsite(apiWebsite);
+      } catch (error) {
+        const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch website details';
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      fetchWebsiteDetails();
-    }
-  }, [websites, websiteId, token, isLoading]);
+    fetchWebsiteDetails();
+  }, [websiteId, token]);
 
   const handleDelete = async () => {
     if (!website) return;
 
-    console.log('Starting delete process...');
-
     try {
       setIsDeleting(true);
-      console.log('Calling deleteWebsite...');
       await deleteWebsite(website.id, website.url);
-      console.log('Delete successful');
       
-      // Close dialog - the useEffect will handle redirect when website disappears from state
+      // Close dialog and redirect after successful deletion
       setShowDeleteDialog(false);
+      router.push(returnUrl);
       
     } catch (error) {
       // Error is handled by the hook
@@ -353,9 +328,5 @@ function WebsiteDetailPageContent() {
 }
 
 export default function WebsiteDetailPage() {
-  return (
-    <WebsitesProvider>
-      <WebsiteDetailPageContent />
-    </WebsitesProvider>
-  );
+  return <WebsiteDetailPageContent />;
 }

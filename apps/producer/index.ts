@@ -27,5 +27,9 @@ async function main() {
     }
 }
 
+console.log('🏭 Producer starting...');
+console.log(`📊 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
+console.log(`📡 Redis: ${process.env.REDIS_URL || 'redis://localhost:6379'}`);
+
 main();
 setInterval(main, 30000);

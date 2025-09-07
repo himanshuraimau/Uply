@@ -41,3 +41,6 @@ yarn-error.log*
 frontend.plan.md
 IMPLEMENTATION_SUMMARY.md
 theme.md
+
+app.flow.md
+.kiro

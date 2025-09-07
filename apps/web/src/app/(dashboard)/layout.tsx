@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ProtectedRoute } from '@/components/protected-route';
 import { useAuth } from '@/contexts/auth-context';
+import { WebsitesProvider } from '@/contexts/websites-context';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, BarChart3, Globe } from 'lucide-react';
@@ -16,7 +17,9 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      <WebsitesProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </WebsitesProvider>
     </ProtectedRoute>
   );
 }
