@@ -1,6 +1,6 @@
 import { xReadGroup, xAckBulk } from "@uply/redis/client";
 import { prisma } from "store/client";
-import axios, { AxiosError } from "axios";
+import axios, { type AxiosError } from "axios";
 import { createServer } from "node:http";
 
 
@@ -13,6 +13,8 @@ let totalProcessed = 0;
 let totalErrors = 0;
 let redisConnectionStatus = 'disconnected';
 let lastRedisError: string | null = null;
+let consecutiveErrors = 0;
+let lastHealthyTime = Date.now();
 
 
 if (!REGION_NAME) {
@@ -50,18 +52,35 @@ async function getOrCreateRegion(regionName: string) {
 
 async function main() {
     console.log(`🚀 Consumer starting - Region: ${REGION_NAME}, Worker: ${WORKER_ID}`);
+    console.log(`📊 Configuration: Health Port: ${HEALTH_PORT}, Environment: ${process.env.NODE_ENV || 'development'}`);
+    
+    try {
+        const region = await getOrCreateRegion(REGION_NAME);
+        console.log(`✓ Region initialized: ${region.name} (ID: ${region.id})`);
+    } catch (error) {
+        console.error(`❌ CRITICAL: Failed to initialize region ${REGION_NAME}:`, {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            timestamp: new Date().toISOString()
+        });
+        process.exit(1);
+    }
     
     const region = await getOrCreateRegion(REGION_NAME);
-    console.log(`✓ Region initialized: ${region.name} (ID: ${region.id})`);
     
     while (true) {
         try {
-            console.log('📡 Reading from Redis stream...');
+            console.log(`📡 Reading from Redis stream... (Attempt ${consecutiveErrors + 1})`);
             const response = await xReadGroup(REGION_NAME, WORKER_ID);
             
-            // Update Redis connection status
+            // Update Redis connection status on successful read
+            if (redisConnectionStatus !== 'connected') {
+                console.log(`✅ Redis connection restored after ${consecutiveErrors} failed attempts`);
+            }
             redisConnectionStatus = 'connected';
             lastRedisError = null;
+            consecutiveErrors = 0;
+            lastHealthyTime = Date.now();
 
             if (!response || !Array.isArray(response) || response.length === 0) {
                 console.log('⏳ No messages in stream, waiting...');
@@ -193,19 +212,67 @@ async function main() {
             lastProcessedTime = Date.now();
             
         } catch (error) {
-            console.error('❌ Error in main processing loop:', {
+            consecutiveErrors++;
+            totalErrors++;
+            redisConnectionStatus = 'error';
+            lastRedisError = error instanceof Error ? error.message : String(error);
+            
+            // Determine error type for better logging
+            let errorType = 'UNKNOWN';
+            let isRecoverable = true;
+            
+            if (error instanceof Error) {
+                if (error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')) {
+                    errorType = 'REDIS_CONNECTION';
+                } else if (error.message.includes('NOGROUP')) {
+                    errorType = 'REDIS_GROUP_MISSING';
+                } else if (error.message.includes('timeout')) {
+                    errorType = 'REDIS_TIMEOUT';
+                } else if (error.message.includes('Database')) {
+                    errorType = 'DATABASE_ERROR';
+                    isRecoverable = false; // Database errors might need manual intervention
+                }
+            }
+            
+            console.error(`❌ Error in main processing loop (${errorType}):`, {
                 error: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
                 region: REGION_NAME,
-                workerId: WORKER_ID
+                workerId: WORKER_ID,
+                consecutiveErrors,
+                totalErrors,
+                errorType,
+                isRecoverable,
+                timestamp: new Date().toISOString(),
+                timeSinceLastHealthy: Date.now() - lastHealthyTime
             });
-            redisConnectionStatus = 'error';
-            lastRedisError = error instanceof Error ? error.message : String(error);
-            totalErrors++;
             
-            // Exponential backoff for Redis connection errors
-            const backoffTime = Math.min(5000 * (2 ** Math.min(totalErrors, 5)), 30000);
-            console.log(`⏳ Waiting ${backoffTime}ms before retry (attempt ${totalErrors})`);
+            // Exponential backoff with different strategies based on error type
+            let backoffTime:any;
+            if (errorType === 'REDIS_CONNECTION') {
+                // Longer backoff for connection issues
+                backoffTime = Math.min(10000 * (2 ** Math.min(consecutiveErrors, 6)), 60000);
+            } else if (errorType === 'DATABASE_ERROR' && !isRecoverable) {
+                // Very long backoff for database issues
+                backoffTime = Math.min(30000 * (2 ** Math.min(consecutiveErrors, 4)), 300000);
+            } else {
+                // Standard backoff for other errors
+                backoffTime = Math.min(5000 * (2 ** Math.min(consecutiveErrors, 5)), 30000);
+            }
+            
+            console.log(`⏳ Waiting ${backoffTime}ms before retry (consecutive errors: ${consecutiveErrors}, total errors: ${totalErrors})`);
+            
+            // Log critical error if too many consecutive failures
+            if (consecutiveErrors >= 10) {
+                console.error(`🚨 CRITICAL: ${consecutiveErrors} consecutive errors. System may be in degraded state.`, {
+                    lastError: lastRedisError,
+                    errorType,
+                    timeSinceLastHealthy: Date.now() - lastHealthyTime,
+                    region: REGION_NAME,
+                    workerId: WORKER_ID
+                });
+            }
+            
             await new Promise(resolve => setTimeout(resolve, backoffTime));
         }
     }
@@ -340,28 +407,67 @@ async function fetchWebsite(url: string, websiteId: string, regionId: string, me
 const healthServer = createServer((req, res) => {
     if (req.url === '/health') {
         const timeSinceLastProcessed = Date.now() - lastProcessedTime;
-        const isHealthy = timeSinceLastProcessed < 60000 && redisConnectionStatus === 'connected'; // Healthy if processed within last minute
+        const timeSinceLastHealthy = Date.now() - lastHealthyTime;
+        
+        // More sophisticated health check
+        const isHealthy = (
+            timeSinceLastProcessed < 120000 && // Processed within last 2 minutes
+            redisConnectionStatus === 'connected' &&
+            consecutiveErrors < 5 && // Less than 5 consecutive errors
+            timeSinceLastHealthy < 300000 // Was healthy within last 5 minutes
+        );
         
         const healthData = {
             status: isHealthy ? 'healthy' : 'unhealthy',
             region: REGION_NAME,
             workerId: WORKER_ID,
-            uptime: process.uptime(),
+            uptime: Math.floor(process.uptime()),
             lastProcessed: new Date(lastProcessedTime).toISOString(),
+            lastHealthy: new Date(lastHealthyTime).toISOString(),
             totalProcessed,
             totalErrors,
+            consecutiveErrors,
             timeSinceLastProcessed,
+            timeSinceLastHealthy,
             redisConnectionStatus,
             lastRedisError,
-            errorRate: totalProcessed > 0 ? `${(totalErrors / (totalProcessed + totalErrors) * 100).toFixed(2)}%` : '0%'
+            errorRate: totalProcessed > 0 ? `${(totalErrors / (totalProcessed + totalErrors) * 100).toFixed(2)}%` : '0%',
+            memoryUsage: {
+                rss: Math.round(process.memoryUsage().rss / 1024 / 1024),
+                heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+                heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
+            },
+            environment: process.env.NODE_ENV || 'development',
+            timestamp: new Date().toISOString()
         };
         
         const statusCode = isHealthy ? 200 : 503;
-        res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+        res.writeHead(statusCode, { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+        });
         res.end(JSON.stringify(healthData, null, 2));
+    } else if (req.url === '/metrics') {
+        // Basic metrics endpoint for monitoring
+        const metrics = {
+            consumer_total_processed: totalProcessed,
+            consumer_total_errors: totalErrors,
+            consumer_consecutive_errors: consecutiveErrors,
+            consumer_uptime_seconds: Math.floor(process.uptime()),
+            consumer_redis_connection_status: redisConnectionStatus === 'connected' ? 1 : 0,
+            consumer_time_since_last_processed_ms: Date.now() - lastProcessedTime,
+            consumer_memory_rss_mb: Math.round(process.memoryUsage().rss / 1024 / 1024),
+            consumer_memory_heap_used_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+        };
+        
+        res.writeHead(200, { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+        });
+        res.end(JSON.stringify(metrics, null, 2));
     } else {
-        res.writeHead(404);
-        res.end('Not Found');
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not Found', availableEndpoints: ['/health', '/metrics'] }));
     }
 });
 

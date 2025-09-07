@@ -8,9 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 interface DashboardStatsProps {
   stats: DashboardStats;
   isLoading?: boolean;
+  error?: string | null;
 }
 
-export function DashboardStatsComponent({ stats, isLoading }: DashboardStatsProps) {
+export function DashboardStatsComponent({ stats, isLoading, error }: DashboardStatsProps) {
   const getUptimeColor = (uptime: number) => {
     if (uptime >= 99) return 'text-secondary-foreground';
     if (uptime >= 95) return 'text-accent-foreground';
@@ -22,34 +23,40 @@ export function DashboardStatsComponent({ stats, isLoading }: DashboardStatsProp
     return `${Math.round(time)}ms`;
   };
 
+  const getDisplayValue = (value: string) => {
+    if (error) return 'Error';
+    if (isLoading) return '...';
+    return value;
+  };
+
   const statsConfig = [
     {
       label: 'WEBSITES',
-      value: isLoading ? '...' : stats.totalWebsites.toString(),
+      value: getDisplayValue(stats.totalWebsites.toString()),
       icon: Globe,
       iconColor: 'text-primary',
-      valueColor: 'text-card-foreground',
+      valueColor: error ? 'text-destructive' : 'text-card-foreground',
     },
     {
       label: 'UPTIME',
-      value: isLoading ? '...' : `${stats.uptime.toFixed(1)}%`,
+      value: getDisplayValue(`${stats.uptime.toFixed(1)}%`),
       icon: TrendingUp,
       iconColor: 'text-secondary',
-      valueColor: getUptimeColor(stats.uptime),
+      valueColor: error ? 'text-destructive' : getUptimeColor(stats.uptime),
     },
     {
       label: 'AVG RESPONSE',
-      value: isLoading ? '...' : formatResponseTime(stats.avgResponseTime),
+      value: getDisplayValue(formatResponseTime(stats.avgResponseTime)),
       icon: Clock,
       iconColor: 'text-accent',
-      valueColor: 'text-card-foreground',
+      valueColor: error ? 'text-destructive' : 'text-card-foreground',
     },
     {
       label: 'INCIDENTS',
-      value: isLoading ? '...' : stats.incidents.toString(),
+      value: getDisplayValue(stats.incidents.toString()),
       icon: AlertTriangle,
       iconColor: 'text-destructive',
-      valueColor: stats.incidents > 0 ? 'text-destructive' : 'text-card-foreground',
+      valueColor: error ? 'text-destructive' : (stats.incidents > 0 ? 'text-destructive' : 'text-card-foreground'),
     },
   ];
 
@@ -66,6 +73,11 @@ export function DashboardStatsComponent({ stats, isLoading }: DashboardStatsProp
                 <p className={`text-3xl font-bold font-sans ${stat.valueColor} ${isLoading ? 'animate-pulse' : ''}`}>
                   {stat.value}
                 </p>
+                {error && (
+                  <p className="text-xs text-destructive mt-1">
+                    Data unavailable
+                  </p>
+                )}
               </div>
               <stat.icon className={`h-8 w-8 ${stat.iconColor}`} />
             </div>

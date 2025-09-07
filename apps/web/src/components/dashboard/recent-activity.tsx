@@ -6,13 +6,16 @@ import { formatDistanceToNow } from 'date-fns';
 import type { ActivityItem } from '@/types/website';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ErrorDisplay } from '@/components/ui/error-display';
 
 interface RecentActivityProps {
   activities: ActivityItem[];
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
-export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
+export function RecentActivity({ activities, isLoading, error, onRetry }: RecentActivityProps) {
   const getActivityIcon = (type: string, status?: string) => {
     switch (type) {
       case 'STATUS_CHANGE':
@@ -41,14 +44,13 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
 
   const getStatusBadge = (status?: string) => {
     if (!status) return null;
-    
+
     return (
-      <Badge 
-        className={`text-xs font-bold border-2 border-border ${
-          status === 'UP' 
-            ? 'bg-secondary text-secondary-foreground' 
-            : 'bg-destructive text-destructive-foreground'
-        }`}
+      <Badge
+        className={`text-xs font-bold border-2 border-border ${status === 'UP'
+          ? 'bg-secondary text-secondary-foreground'
+          : 'bg-destructive text-destructive-foreground'
+          }`}
       >
         {status}
       </Badge>
@@ -70,6 +72,25 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
             </div>
             <p className="text-muted-foreground font-sans">Loading activity...</p>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-4 border-border bg-card">
+        <CardHeader className="border-b-4 border-border">
+          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-tight">
+            RECENT ACTIVITY
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-8">
+          <ErrorDisplay
+            error={error}
+            onRetry={onRetry}
+            variant="inline"
+          />
         </CardContent>
       </Card>
     );
@@ -114,13 +135,13 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
           {activities.map((activity) => {
             const Icon = getActivityIcon(activity.type, activity.status);
             const iconColor = getActivityColor(activity.type, activity.status);
-            
+
             return (
               <div key={activity.id} className="flex items-start space-x-4 p-4 border-2 border-border bg-background">
                 <div className={`mt-1 ${iconColor}`}>
                   <Icon className="h-5 w-5" />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-1">
                     <p className="font-semibold text-card-foreground font-sans truncate">
@@ -128,11 +149,11 @@ export function RecentActivity({ activities, isLoading }: RecentActivityProps) {
                     </p>
                     {getStatusBadge(activity.status)}
                   </div>
-                  
+
                   <p className="text-sm text-muted-foreground font-sans">
                     {activity.message}
                   </p>
-                  
+
                   <p className="text-xs text-muted-foreground font-sans mt-1">
                     {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                   </p>

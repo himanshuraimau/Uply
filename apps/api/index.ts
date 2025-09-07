@@ -15,7 +15,7 @@ const app = express();
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
         ? ['https://your-frontend-domain.com'] // Replace with your production domain
-        : ['http://localhost:3000', 'http://localhost:3001'], // Allow local development
+        : ['http://localhost:3000', 'http://localhost:3003'], // Allow local development
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -25,22 +25,108 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Error handler middleware
+// Enhanced error handler middleware
 function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
-    console.error('API Error:', err);
-    res.status(500).json({
-        error: "Internal server error",
-        code: "INTERNAL_ERROR"
+    const timestamp = new Date().toISOString();
+    const requestId = req.headers['x-request-id'] || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Log error with context
+    console.error(`❌ API Error [${requestId}]:`, {
+        error: err.message,
+        stack: err.stack,
+        method: req.method,
+        url: req.url,
+        userAgent: req.get('User-Agent'),
+        ip: req.ip || req.connection.remoteAddress,
+        timestamp,
+        body: req.method !== 'GET' ? req.body : undefined
+    });
+    
+    // Determine error type and appropriate response
+    let statusCode = 500;
+    let errorCode = 'INTERNAL_ERROR';
+    let userMessage = 'An internal server error occurred';
+    
+    if (err.name === 'ValidationError') {
+        statusCode = 400;
+        errorCode = 'VALIDATION_ERROR';
+        userMessage = 'Invalid request data';
+    } else if (err.message.includes('Prisma')) {
+        if (err.message.includes('Record to update not found')) {
+            statusCode = 404;
+            errorCode = 'RESOURCE_NOT_FOUND';
+            userMessage = 'The requested resource was not found';
+        } else if (err.message.includes('Unique constraint')) {
+            statusCode = 409;
+            errorCode = 'RESOURCE_CONFLICT';
+            userMessage = 'A resource with this information already exists';
+        } else if (err.message.includes('Foreign key constraint')) {
+            statusCode = 400;
+            errorCode = 'INVALID_REFERENCE';
+            userMessage = 'Invalid reference to related resource';
+        } else {
+            errorCode = 'DATABASE_ERROR';
+            userMessage = 'Database operation failed';
+        }
+    } else if (err.message.includes('timeout')) {
+        statusCode = 504;
+        errorCode = 'TIMEOUT_ERROR';
+        userMessage = 'Request timed out';
+    } else if (err.message.includes('ECONNREFUSED') || err.message.includes('ENOTFOUND')) {
+        statusCode = 503;
+        errorCode = 'SERVICE_UNAVAILABLE';
+        userMessage = 'External service is currently unavailable';
+    }
+    
+    res.status(statusCode).json({
+        error: userMessage,
+        code: errorCode,
+        requestId,
+        timestamp,
+        ...(process.env.NODE_ENV === 'development' && { 
+            details: err.message,
+            stack: err.stack 
+        })
     });
 }
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
-    });
+// Enhanced health check endpoint
+app.get('/health', async (req, res) => {
+    const timestamp = new Date().toISOString();
+    let dbStatus = 'unknown';
+    let dbError: string | null = null;
+    
+    // Test database connection
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        dbStatus = 'connected';
+    } catch (error) {
+        dbStatus = 'error';
+        dbError = error instanceof Error ? error.message : String(error);
+        console.error('Database health check failed:', error);
+    }
+    
+    const isHealthy = dbStatus === 'connected';
+    const statusCode = isHealthy ? 200 : 503;
+    
+    const healthData = {
+        status: isHealthy ? 'healthy' : 'unhealthy',
+        timestamp,
+        uptime: Math.floor(process.uptime()),
+        database: {
+            status: dbStatus,
+            error: dbError
+        },
+        environment: process.env.NODE_ENV || 'development',
+        version: process.env.npm_package_version || '1.0.0',
+        memoryUsage: {
+            rss: Math.round(process.memoryUsage().rss / 1024 / 1024),
+            heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+            heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
+        }
+    };
+    
+    res.status(statusCode).json(healthData);
 });
 
 
@@ -55,34 +141,78 @@ app.get('/websites', authMiddleware, async (req, res) => {
             include: {
                 ticks: {
                     orderBy: { createdAt: 'desc' },
-                    take: 1
+                    take: 1,
+                    include: {
+                        region: true
+                    }
                 }
             },
             orderBy: { timeAdded: 'desc' }
         });
         
-        // Transform to match frontend expectations
-        const transformedWebsites = websites.map(website => ({
-            id: website.id,
-            url: website.url,
-            isActive: website.isActive,
-            createdAt: website.timeAdded.toISOString(),
-            updatedAt: website.timeAdded.toISOString(),
-            userId: website.user_id,
-            currentStatus: website.ticks[0] ? {
-                id: website.ticks[0].id,
-                websiteId: website.id,
-                status: website.ticks[0].status as 'UP' | 'DOWN',
-                responseTime: website.ticks[0].response_time_ms,
-                checkedAt: website.ticks[0].createdAt.toISOString(),
-                region: 'default'
-            } : undefined
-        }));
+        // Calculate uptime and avg response time for each website
+        const transformedWebsites: WebsiteWithStatus[] = await Promise.all(
+            websites.map(async (website) => {
+                // Get last 100 ticks for uptime calculation
+                const recentTicks = await prisma.websiteTick.findMany({
+                    where: { website_id: website.id },
+                    orderBy: { createdAt: 'desc' },
+                    take: 100
+                });
+
+                let uptime = 100;
+                let avgResponseTime = 0;
+
+                if (recentTicks.length > 0) {
+                    const upTicks = recentTicks.filter(tick => tick.status === 'UP').length;
+                    uptime = (upTicks / recentTicks.length) * 100;
+                    
+                    const totalResponseTime = recentTicks.reduce((sum, tick) => sum + tick.response_time_ms, 0);
+                    avgResponseTime = Math.round(totalResponseTime / recentTicks.length);
+                }
+
+                return {
+                    id: website.id,
+                    url: website.url,
+                    isActive: website.isActive,
+                    createdAt: website.timeAdded.toISOString(),
+                    updatedAt: website.timeAdded.toISOString(),
+                    userId: website.user_id,
+                    uptime,
+                    avgResponseTime,
+                    currentStatus: website.ticks[0] ? {
+                        id: website.ticks[0].id,
+                        websiteId: website.id,
+                        status: website.ticks[0].status as 'UP' | 'DOWN',
+                        responseTime: website.ticks[0].response_time_ms,
+                        
+                        checkedAt: website.ticks[0].createdAt.toISOString(),
+                        region: website.ticks[0].region.name
+                    } : undefined
+                };
+            })
+        );
         
         res.json({ websites: transformedWebsites });
     } catch (error) {
-        console.error('Error fetching websites:', error);
-        res.status(500).json({ error: "Failed to fetch websites" });
+        console.error('Error fetching websites:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to fetch websites",
+            code: "FETCH_WEBSITES_ERROR"
+        });
     }
 });
 
@@ -133,8 +263,32 @@ app.post('/website', authMiddleware, async (req, res) => {
             userId: website.user_id
         });
     } catch (error) {
-        console.error('Error creating website:', error);
-        res.status(500).json({ error: "Failed to create website" });
+        console.error('Error creating website:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            requestBody: req.body,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error) {
+            if (error.message.includes('Unique constraint')) {
+                return res.status(409).json({ 
+                    error: "A website with this URL already exists",
+                    code: "WEBSITE_EXISTS"
+                });
+            } else if (error.message.includes('Prisma')) {
+                return res.status(503).json({ 
+                    error: "Database service is currently unavailable",
+                    code: "DATABASE_UNAVAILABLE"
+                });
+            }
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to create website",
+            code: "CREATE_WEBSITE_ERROR"
+        });
     }
 });
 
@@ -161,8 +315,25 @@ app.get('/website/:websiteId', authMiddleware, async (req, res) => {
 
         res.json(website);
     } catch (error) {
-        console.error('Error fetching website:', error);
-        res.status(500).json({ error: "Failed to fetch website" });
+        console.error('Error fetching website:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            websiteId: req.params.websiteId,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to fetch website",
+            code: "FETCH_WEBSITE_ERROR"
+        });
     }
 });
 
@@ -197,8 +368,26 @@ app.put('/website/:websiteId', authMiddleware, async (req, res) => {
 
         res.json(updatedWebsite);
     } catch (error) {
-        console.error('Error updating website:', error);
-        res.status(500).json({ error: "Failed to update website" });
+        console.error('Error updating website:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            websiteId: req.params.websiteId,
+            requestBody: req.body,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to update website",
+            code: "UPDATE_WEBSITE_ERROR"
+        });
     }
 });
 
@@ -227,8 +416,25 @@ app.delete('/website/:websiteId', authMiddleware, async (req, res) => {
             message: "Website deleted successfully"
         });
     } catch (error) {
-        console.error('Error deleting website:', error);
-        res.status(500).json({ error: "Failed to delete website" });
+        console.error('Error deleting website:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            websiteId: req.params.websiteId,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to delete website",
+            code: "DELETE_WEBSITE_ERROR"
+        });
     }
 });
 
@@ -263,8 +469,25 @@ app.get("/status/:websiteId", authMiddleware, async (req, res) => {
 
         res.json(lastTick);
     } catch (error) {
-        console.error('Error fetching status:', error);
-        res.status(500).json({ error: "Failed to fetch status" });
+        console.error('Error fetching status:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            websiteId: req.params.websiteId,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to fetch status",
+            code: "FETCH_STATUS_ERROR"
+        });
     }
 });
 
@@ -319,8 +542,26 @@ app.get('/website/:websiteId/history', authMiddleware, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching history:', error);
-        res.status(500).json({ error: "Failed to fetch history" });
+        console.error('Error fetching history:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            websiteId: req.params.websiteId,
+            query: req.query,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to fetch history",
+            code: "FETCH_HISTORY_ERROR"
+        });
     }
 });
 
@@ -338,29 +579,57 @@ app.get('/dashboard', authMiddleware, async (req, res) => {
             include: {
                 ticks: {
                     orderBy: { createdAt: 'desc' },
-                    take: 1
+                    take: 1,
+                    include: {
+                        region: true
+                    }
                 }
             },
             orderBy: { timeAdded: 'desc' }
         });
 
-        // Transform websites to match frontend expectations
-        const transformedWebsites: WebsiteWithStatus[] = websites.map(website => ({
-            id: website.id,
-            url: website.url,
-            isActive: website.isActive,
-            createdAt: website.timeAdded.toISOString(),
-            updatedAt: website.timeAdded.toISOString(),
-            userId: website.user_id,
-            currentStatus: website.ticks[0] ? {
-                id: website.ticks[0].id,
-                websiteId: website.id,
-                status: website.ticks[0].status as 'UP' | 'DOWN',
-                responseTime: website.ticks[0].response_time_ms,
-                checkedAt: website.ticks[0].createdAt.toISOString(),
-                region: 'default'
-            } : undefined
-        }));
+        // Transform websites to match frontend expectations with calculated metrics
+        const transformedWebsites: WebsiteWithStatus[] = await Promise.all(
+            websites.map(async (website) => {
+                // Get last 100 ticks for uptime calculation
+                const recentTicks = await prisma.websiteTick.findMany({
+                    where: { website_id: website.id },
+                    orderBy: { createdAt: 'desc' },
+                    take: 100
+                });
+
+                let uptime = 100;
+                let avgResponseTime = 0;
+
+                if (recentTicks.length > 0) {
+                    const upTicks = recentTicks.filter(tick => tick.status === 'UP').length;
+                    uptime = (upTicks / recentTicks.length) * 100;
+                    
+                    const totalResponseTime = recentTicks.reduce((sum, tick) => sum + tick.response_time_ms, 0);
+                    avgResponseTime = Math.round(totalResponseTime / recentTicks.length);
+                }
+
+                return {
+                    id: website.id,
+                    url: website.url,
+                    isActive: website.isActive,
+                    createdAt: website.timeAdded.toISOString(),
+                    updatedAt: website.timeAdded.toISOString(),
+                    userId: website.user_id,
+                    uptime,
+                    avgResponseTime,
+                    currentStatus: website.ticks[0] ? {
+                        id: website.ticks[0].id,
+                        websiteId: website.id,
+                        status: website.ticks[0].status as 'UP' | 'DOWN',
+                        responseTime: website.ticks[0].response_time_ms,
+                        
+                        checkedAt: website.ticks[0].createdAt.toISOString(),
+                        region: website.ticks[0].region.name
+                    } : undefined
+                };
+            })
+        );
 
         // Calculate stats
         let upCount = 0;
@@ -423,8 +692,24 @@ app.get('/dashboard', authMiddleware, async (req, res) => {
 
         res.json(dashboardResponse);
     } catch (error) {
-        console.error('Error fetching dashboard:', error);
-        res.status(500).json({ error: "Failed to fetch dashboard data" });
+        console.error('Error fetching dashboard:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to fetch dashboard data",
+            code: "FETCH_DASHBOARD_ERROR"
+        });
     }
 });
 
@@ -464,8 +749,24 @@ app.post("/user/signup", async (req, res) => {
             message: "User created successfully"
         });
     } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({ error: "User creation failed" });
+        console.error('Signup error:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            username: req.body?.username,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "User creation failed",
+            code: "SIGNUP_ERROR"
+        });
     }
 });
 
@@ -506,8 +807,24 @@ app.post("/user/signin", async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Signin error:', error);
-        res.status(500).json({ error: "Sign-in failed" });
+        console.error('Signin error:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            username: req.body?.username,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Sign-in failed",
+            code: "SIGNIN_ERROR"
+        });
     }
 });
 
@@ -542,15 +859,31 @@ app.get('/user/profile', authMiddleware, async (req, res) => {
             websiteCount: user._count.websites
         });
     } catch (error) {
-        console.error('Error fetching profile:', error);
-        res.status(500).json({ error: "Failed to fetch profile" });
+        console.error('Error fetching profile:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            userId: (req as any).userId,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (error instanceof Error && error.message.includes('Prisma')) {
+            return res.status(503).json({ 
+                error: "Database service is currently unavailable",
+                code: "DATABASE_UNAVAILABLE"
+            });
+        }
+        
+        res.status(500).json({ 
+            error: "Failed to fetch profile",
+            code: "FETCH_PROFILE_ERROR"
+        });
     }
 });
 
 // Apply error handler middleware
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`🚀 API Server is running on port ${PORT}`);
     console.log(`📊 Health check available at http://localhost:${PORT}/health`);

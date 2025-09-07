@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { apiClient, ApiError } from '@/lib/api';
-import { useAuth } from '@/contexts/auth-context';
-import type { WebsiteWithStatus, AddWebsiteData } from '@/types/website';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { ApiError, apiClient } from '@/lib/api';
+import { useAuth } from '@/contexts/auth-context';
+import type { AddWebsiteData, WebsiteWithStatus } from '@/types/website';
 
 export function useWebsites() {
   const [websites, setWebsites] = useState<WebsiteWithStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const { token, isAuthenticated } = useAuth();
 
   const fetchWebsites = useCallback(async () => {
@@ -23,85 +25,145 @@ export function useWebsites() {
       setIsLoading(true);
       setError(null);
       const data = await apiClient.getWebsites(token);
+      // API returns { websites: WebsiteWithStatus[] }
       setWebsites(data.websites || []);
     } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch websites';
+      let errorMessage = 'Failed to fetch websites';
+      
+      if (error instanceof ApiError) {
+        errorMessage = error.message;
+        
+        // Log error details for debugging
+        console.error('Websites fetch error:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          timestamp: new Date().toISOString()
+        });
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error('Websites fetch error:', {
+          message: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        console.error('Websites fetch error:', {
+          error: String(error),
+          timestamp: new Date().toISOString()
+        });
+      }
+      
       setError(errorMessage);
-      toast.error(errorMessage);
+      setWebsites([]);
     } finally {
       setIsLoading(false);
     }
   }, [isAuthenticated, token]);
 
-  const addWebsite = async (data: AddWebsiteData) => {
+  const addWebsite = async (data: AddWebsiteData): Promise<WebsiteWithStatus> => {
     if (!token) throw new Error('Not authenticated');
 
-    // Create optimistic website object
-    const optimisticWebsite: WebsiteWithStatus = {
-      id: `temp-${Date.now()}`, // Temporary ID
-      url: data.url,
-      isActive: data.isActive ?? true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      userId: 'temp-user', // Will be replaced with real data
-      currentStatus: undefined, // No status yet
-      uptime: undefined,
-      avgResponseTime: undefined,
-    };
-
-    // Optimistic update - add immediately to UI
-    setWebsites(prev => [...prev, optimisticWebsite]);
-
-    // Clear any previous errors when adding
+    setIsAdding(true);
     setError(null);
 
     try {
       const response = await apiClient.addWebsite(data, token);
-
-      // Replace optimistic website with real data from server
-      setWebsites(prev =>
-        prev.map(website =>
-          website.id === optimisticWebsite.id
-            ? response // API returns WebsiteWithStatus directly
-            : website
-        )
-      );
-
+      
+      // Add the new website to the list
+      setWebsites(prev => [response, ...prev]);
+      
       toast.success(`Website ${data.url} added successfully!`);
       return response;
     } catch (error) {
-      // Remove optimistic website on error
-      setWebsites(prev => prev.filter(website => website.id !== optimisticWebsite.id));
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to add website';
+      let errorMessage = 'Failed to add website';
+      
+      if (error instanceof ApiError) {
+        errorMessage = error.message;
+        
+        // Log error details for debugging
+        console.error('Add website error:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          websiteData: data,
+          timestamp: new Date().toISOString()
+        });
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error('Add website error:', {
+          message: error.message,
+          stack: error.stack,
+          websiteData: data,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        console.error('Add website error:', {
+          error: String(error),
+          websiteData: data,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      setError(errorMessage);
       toast.error(errorMessage);
       throw error;
+    } finally {
+      setIsAdding(false);
     }
   };
 
-  const deleteWebsite = async (websiteId: string, url: string) => {
+  const deleteWebsite = async (websiteId: string, url: string): Promise<void> => {
     if (!token) throw new Error('Not authenticated');
 
-    // Store the website to restore if deletion fails
-    const websiteToDelete = websites.find(w => w.id === websiteId);
-
-    // Optimistic update - remove immediately from UI
-    setWebsites(prev => prev.filter(website => website.id !== websiteId));
-
-    // Clear any previous errors when performing delete
+    setIsDeleting(websiteId);
     setError(null);
 
     try {
       await apiClient.deleteWebsite(websiteId, token);
+      
+      // Remove the website from the list
+      setWebsites(prev => prev.filter(website => website.id !== websiteId));
+      
       toast.success(`Website ${url} removed successfully!`);
     } catch (error) {
-      // Restore website on error
-      if (websiteToDelete) {
-        setWebsites(prev => [...prev, websiteToDelete]);
+      let errorMessage = 'Failed to delete website';
+      
+      if (error instanceof ApiError) {
+        errorMessage = error.message;
+        
+        // Log error details for debugging
+        console.error('Delete website error:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          websiteId,
+          websiteUrl: url,
+          timestamp: new Date().toISOString()
+        });
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error('Delete website error:', {
+          message: error.message,
+          stack: error.stack,
+          websiteId,
+          websiteUrl: url,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        console.error('Delete website error:', {
+          error: String(error),
+          websiteId,
+          websiteUrl: url,
+          timestamp: new Date().toISOString()
+        });
       }
-
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to delete website';
+      
+      setError(errorMessage);
       toast.error(errorMessage);
       throw error;
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -109,12 +171,21 @@ export function useWebsites() {
     fetchWebsites();
   }, [fetchWebsites]);
 
+  const retry = useCallback(() => {
+    if (!isLoading) {
+      fetchWebsites();
+    }
+  }, [fetchWebsites, isLoading]);
+
   return {
     websites,
     isLoading,
     error,
+    isAdding,
+    isDeleting,
     addWebsite,
     deleteWebsite,
     refetch: fetchWebsites,
+    retry,
   };
 }

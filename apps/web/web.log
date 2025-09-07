@@ -1,0 +1,13 @@
+nohup: ignoring input
+
+> web@0.1.0 dev
+> next dev --turbopack
+
+ ⚠ Port 3000 is in use by an unknown process, using available port 3002 instead.
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Local:        http://localhost:3002
+   - Network:      http://192.168.1.7:3002
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 876ms

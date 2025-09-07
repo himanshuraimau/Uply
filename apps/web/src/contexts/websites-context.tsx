@@ -8,9 +8,12 @@ interface WebsitesContextType {
   websites: WebsiteWithStatus[];
   isLoading: boolean;
   error: string | null;
-  addWebsite: (data: AddWebsiteData) => Promise<any>;
+  isAdding: boolean;
+  isDeleting: string | null;
+  addWebsite: (data: AddWebsiteData) => Promise<WebsiteWithStatus>;
   deleteWebsite: (websiteId: string, url: string) => Promise<void>;
   refetch: () => Promise<void>;
+  retry: () => void;
 }
 
 const WebsitesContext = createContext<WebsitesContextType | undefined>(undefined);

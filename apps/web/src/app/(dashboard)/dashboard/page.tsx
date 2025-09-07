@@ -6,7 +6,7 @@ import { RecentActivity } from '@/components/dashboard/recent-activity';
 import { WebsiteList } from '@/components/websites/website-list';
 
 export default function DashboardPage() {
-  const { dashboardData, isLoading } = useDashboard();
+  const { dashboardData, isLoading, error } = useDashboard();
 
   const defaultStats = {
     totalWebsites: 0,
@@ -31,6 +31,7 @@ export default function DashboardPage() {
       <DashboardStatsComponent 
         stats={dashboardData?.stats || defaultStats} 
         isLoading={isLoading}
+        error={error}
       />
 
       {/* Websites Section */}
@@ -40,6 +41,7 @@ export default function DashboardPage() {
       <RecentActivity 
         activities={dashboardData?.recentActivity || []} 
         isLoading={isLoading}
+        error={error}
       />
     </div>
   );

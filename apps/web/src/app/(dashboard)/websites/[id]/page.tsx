@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusIndicator } from '@/components/websites/status-indicator';
 import { Loading } from '@/components/ui/loading';
+import { WebsiteHistory } from '@/components/websites/website-history';
 import {
   Dialog,
   DialogContent,
@@ -267,10 +268,10 @@ function WebsiteDetailPageContent() {
         <Card className="border-4 border-border bg-card">
           <CardContent className="p-6 text-center">
             <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
-              STATUS CODE
+              REGION
             </p>
             <p className="text-4xl font-bold text-card-foreground font-sans">
-              {website.currentStatus?.statusCode || 'N/A'}
+              {website.currentStatus?.region || 'N/A'}
             </p>
           </CardContent>
         </Card>
@@ -323,6 +324,9 @@ function WebsiteDetailPageContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Monitoring History */}
+      <WebsiteHistory websiteId={websiteId} />
     </div>
   );
 }
