@@ -31,5 +31,21 @@ export const signupSchema = z.object({
   path: ["confirmPassword"],
 });
 
+export const websiteSchema = z.object({
+  url: z
+    .string()
+    .min(1, 'URL is required')
+    .url('Please enter a valid URL')
+    .refine((url) => {
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }, 'URL must start with http:// or https://'),
+});
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
+export type WebsiteFormData = z.infer<typeof websiteSchema>;

@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/auth-context";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "react-hot-toast";
 
 // Vercel-inspired Typography Setup
@@ -42,40 +43,42 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased h-full bg-background text-foreground`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            {children}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'hsl(var(--card))',
-                  color: 'hsl(var(--card-foreground))',
-                  border: '4px solid hsl(var(--border))',
-                  borderRadius: '0',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: '600',
-                },
-                success: {
+        <ErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AuthProvider>
+              {children}
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
                   style: {
-                    border: '4px solid hsl(var(--primary))',
+                    background: 'hsl(var(--card))',
+                    color: 'hsl(var(--card-foreground))',
+                    border: '4px solid hsl(var(--border))',
+                    borderRadius: '0',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: '600',
                   },
-                },
-                error: {
-                  style: {
-                    border: '4px solid hsl(var(--destructive))',
+                  success: {
+                    style: {
+                      border: '4px solid hsl(var(--primary))',
+                    },
                   },
-                },
-              }}
-            />
-          </AuthProvider>
-        </ThemeProvider>
+                  error: {
+                    style: {
+                      border: '4px solid hsl(var(--destructive))',
+                    },
+                  },
+                }}
+              />
+            </AuthProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

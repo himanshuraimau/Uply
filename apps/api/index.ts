@@ -17,10 +17,12 @@ app.use(cors({
         : ['http://localhost:3000', 'http://localhost:3001'], // Allow local development
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    exposedHeaders: ['Content-Type']
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Error handler middleware
 function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
@@ -57,7 +59,26 @@ app.get('/websites', authMiddleware, async (req, res) => {
             },
             orderBy: { timeAdded: 'desc' }
         });
-        res.json(websites);
+        
+        // Transform to match frontend expectations
+        const transformedWebsites = websites.map(website => ({
+            id: website.id,
+            url: website.url,
+            isActive: website.isActive,
+            createdAt: website.timeAdded.toISOString(),
+            updatedAt: website.timeAdded.toISOString(),
+            userId: website.user_id,
+            currentStatus: website.ticks[0] ? {
+                id: website.ticks[0].id,
+                websiteId: website.id,
+                status: website.ticks[0].status as 'UP' | 'DOWN',
+                responseTime: website.ticks[0].response_time_ms,
+                checkedAt: website.ticks[0].createdAt.toISOString(),
+                region: 'default'
+            } : undefined
+        }));
+        
+        res.json({ websites: transformedWebsites });
     } catch (error) {
         console.error('Error fetching websites:', error);
         res.status(500).json({ error: "Failed to fetch websites" });
@@ -67,11 +88,28 @@ app.get('/websites', authMiddleware, async (req, res) => {
 // Add website
 app.post('/website', authMiddleware, async (req, res) => {
     try {
+        console.log('Raw request body:', req.body);
+        console.log('Content-Type:', req.get('Content-Type'));
+        console.log('Request method:', req.method);
+        console.log('All headers:', JSON.stringify(req.headers, null, 2));
+        
+        // Check if body is empty or undefined
+        if (!req.body || typeof req.body !== 'object') {
+            console.log('Request body is invalid:', req.body);
+            return res.status(400).json({
+                error: "Request body is missing or invalid",
+                details: "Expected JSON object with url and isActive properties"
+            });
+        }
+        
         const data = WebsiteInputSchema.safeParse(req.body);
+        console.log('Validation result:', data);
+        
         if (!data.success) {
+            console.log('Validation failed:', data.error);
             return res.status(400).json({
                 error: "Invalid input",
-                details: data.error
+                details: data.error.format()
             });
         }
 
@@ -83,11 +121,15 @@ app.post('/website', authMiddleware, async (req, res) => {
                 isActive: data.data.isActive
             }
         });
+        
+        // Return in the format expected by frontend
         res.status(201).json({
             id: website.id,
             url: website.url,
             isActive: website.isActive,
-            timeAdded: website.timeAdded
+            createdAt: website.timeAdded.toISOString(),
+            updatedAt: website.timeAdded.toISOString(),
+            userId: website.user_id
         });
     } catch (error) {
         console.error('Error creating website:', error);

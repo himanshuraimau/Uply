@@ -1,36 +1,201 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uply Web App
+
+A modern, brutalist-themed website monitoring dashboard built with Next.js 15 and React 19.
+
+## Features
+
+### ✅ Implemented
+- **Authentication System**
+  - JWT-based login/signup
+  - Protected routes
+  - Persistent auth state
+  - Auto token validation
+
+- **Dashboard**
+  - Real-time monitoring stats
+  - Website overview cards
+  - Recent activity feed
+  - Responsive design
+
+- **Website Management**
+  - Add websites with URL validation
+  - Website status indicators (UP/DOWN/UNKNOWN)
+  - Delete websites with confirmation
+  - Individual website detail pages
+
+- **Neo-Brutalist UI**
+  - Bold typography and stark contrasts
+  - Thick borders and geometric shapes
+  - Custom shadcn/ui components
+  - Dark/light theme support
+
+- **User Experience**
+  - Toast notifications
+  - Loading states
+  - Error boundaries
+  - Mobile-responsive design
+
+### 🚧 Planned Features
+- Real-time WebSocket updates
+- Response time charts
+- Email notifications
+- Bulk website operations
+- Advanced filtering and search
+- Custom monitoring intervals
+
+## Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **React**: React 19
+- **Styling**: Tailwind CSS + CSS Modules
+- **UI Components**: shadcn/ui (customized)
+- **Forms**: React Hook Form + Zod validation
+- **State Management**: React Context + Custom hooks
+- **HTTP Client**: Fetch API with custom wrapper
+- **Notifications**: React Hot Toast
+- **Icons**: Lucide React
+- **Typography**: Inter + JetBrains Mono
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+ or Bun
+- Backend API running on port 3001
 
+### Installation
+
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+```
+
+2. Copy environment variables:
+```bash
+cp .env.local.example .env.local
+```
+
+3. Update environment variables in `.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+4. Start the development server:
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be available at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Authentication pages
+│   │   ├── login/
+│   │   └── signup/
+│   ├── (dashboard)/       # Protected dashboard pages
+│   │   ├── dashboard/
+│   │   └── websites/
+│   ├── globals.css        # Global styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx          # Landing page
+├── components/            # React components
+│   ├── dashboard/         # Dashboard-specific components
+│   ├── websites/          # Website management components
+│   └── ui/               # Reusable UI components (shadcn/ui)
+├── contexts/             # React contexts
+│   └── auth-context.tsx  # Authentication context
+├── hooks/                # Custom React hooks
+│   ├── useDashboard.ts   # Dashboard data hook
+│   └── useWebsites.ts    # Website management hook
+├── lib/                  # Utility libraries
+│   ├── api.ts           # API client
+│   ├── utils.ts         # General utilities
+│   └── validations.ts   # Zod schemas
+└── types/               # TypeScript type definitions
+    ├── auth.ts          # Authentication types
+    └── website.ts       # Website types
+```
 
-## Learn More
+## API Integration
 
-To learn more about Next.js, take a look at the following resources:
+The app integrates with the backend API through a centralized client (`src/lib/api.ts`):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Authentication Endpoints
+- `POST /user/signup` - User registration
+- `POST /user/signin` - User login
+- `GET /user/profile` - Get user profile
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Website Endpoints
+- `GET /websites` - List user's websites
+- `POST /website` - Add new website
+- `DELETE /website/:id` - Remove website
+- `GET /status/:websiteId` - Get website status
+- `GET /dashboard` - Get dashboard data
 
-## Deploy on Vercel
+## Styling & Theming
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app uses a custom neo-brutalist theme with:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Colors**: High contrast black/white with accent colors
+- **Typography**: Bold, sans-serif fonts (Inter + JetBrains Mono)
+- **Borders**: Thick 4px borders throughout
+- **Shadows**: Geometric drop shadows
+- **Spacing**: Generous whitespace and padding
+
+### Theme Customization
+
+Colors and styling can be customized in:
+- `src/app/globals.css` - CSS custom properties
+- `tailwind.config.js` - Tailwind configuration
+
+## Development
+
+### Adding New Components
+
+1. Create component in appropriate directory
+2. Follow naming convention: `kebab-case.tsx`
+3. Use TypeScript interfaces for props
+4. Apply brutalist styling patterns
+
+### Adding New Pages
+
+1. Create page in `src/app/` directory
+2. Use appropriate route groups: `(auth)` or `(dashboard)`
+3. Add to navigation if needed
+
+### State Management
+
+- **Authentication**: Global context (`AuthProvider`)
+- **Server State**: Custom hooks with API calls
+- **UI State**: Local component state
+- **Forms**: React Hook Form with Zod validation
+
+## Building for Production
+
+```bash
+bun run build
+```
+
+The optimized build will be created in the `.next` directory.
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:3001` |
+| `NEXT_PUBLIC_APP_NAME` | Application name | `Uply` |
+| `NEXT_PUBLIC_APP_DESCRIPTION` | App description | `Website Monitoring Service` |
+
+## Contributing
+
+1. Follow the existing code style and patterns
+2. Add TypeScript types for all new code
+3. Test components in both light and dark themes
+4. Ensure mobile responsiveness
+5. Add proper error handling
+
+## License
+
+This project is part of the Uply monitoring service.

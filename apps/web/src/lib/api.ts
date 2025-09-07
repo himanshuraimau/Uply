@@ -1,4 +1,5 @@
 import type { AuthResponse, SignupData, LoginData, User } from '@/types/auth';
+import type { WebsiteWithStatus, DashboardData, AddWebsiteData } from '@/types/website';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -27,11 +28,11 @@ class ApiClient {
     const url = `${this.baseUrl}${endpoint}`;
     
     const config: RequestInit = {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      ...options,
     };
 
     try {
@@ -83,15 +84,26 @@ class ApiClient {
     });
   }
 
-  // Website endpoints (to be used later)
-  async getWebsites(token?: string) {
-    return this.request('/websites', {
-      method: 'GET',
-      headers: this.getAuthHeaders(token),
-    });
+  // Website endpoints
+  async getWebsites(token?: string): Promise<{ websites: WebsiteWithStatus[] }> {
+    try {
+      return await this.request('/websites', {
+        method: 'GET',
+        headers: this.getAuthHeaders(token),
+      });
+    } catch (error) {
+      // For development, return mock data if the API is not available
+      if (process.env.NODE_ENV === 'development' && error instanceof ApiError && error.code === 'NETWORK_ERROR') {
+        console.warn('API not available, returning mock data');
+        return {
+          websites: [],
+        };
+      }
+      throw error;
+    }
   }
 
-  async addWebsite(data: { url: string; isActive?: boolean }, token?: string) {
+  async addWebsite(data: AddWebsiteData, token?: string): Promise<WebsiteWithStatus> {
     return this.request('/website', {
       method: 'POST',
       headers: this.getAuthHeaders(token),
@@ -99,11 +111,43 @@ class ApiClient {
     });
   }
 
-  async getDashboard(token?: string) {
-    return this.request('/dashboard', {
+  async deleteWebsite(websiteId: string, token?: string): Promise<{ message: string }> {
+    return this.request(`/website/${websiteId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(token),
+    });
+  }
+
+  async getWebsiteStatus(websiteId: string, token?: string): Promise<any> {
+    return this.request(`/status/${websiteId}`, {
       method: 'GET',
       headers: this.getAuthHeaders(token),
     });
+  }
+
+  async getDashboard(token?: string): Promise<DashboardData> {
+    try {
+      return await this.request('/dashboard', {
+        method: 'GET',
+        headers: this.getAuthHeaders(token),
+      });
+    } catch (error) {
+      // For development, return mock data if the API is not available
+      if (process.env.NODE_ENV === 'development' && error instanceof ApiError && error.code === 'NETWORK_ERROR') {
+        console.warn('API not available, returning mock dashboard data');
+        return {
+          stats: {
+            totalWebsites: 0,
+            uptime: 100,
+            avgResponseTime: 0,
+            incidents: 0,
+          },
+          websites: [],
+          recentActivity: [],
+        };
+      }
+      throw error;
+    }
   }
 }
 

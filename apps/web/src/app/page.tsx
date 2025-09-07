@@ -48,21 +48,21 @@ export default function Home() {
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/signup">
-                <Button 
-                  size="lg" 
-                  className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground px-8 py-4 text-lg font-semibold"
-                >
-                  START MONITORING FREE
-                </Button>
-              </Link>
+                        <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                size="lg" 
+                className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground px-8 py-4 text-lg font-semibold"
+                asChild
+              >
+                <Link href="/signup">START MONITORING FREE</Link>
+              </Button>
               <Button 
                 variant="outline" 
                 size="lg"
                 className="border-4 border-border hover:bg-muted hover:text-foreground px-8 py-4 text-lg font-semibold"
+                asChild
               >
-                VIEW DEMO
+                <Link href="/login">VIEW DEMO</Link>
               </Button>
             </div>
 
