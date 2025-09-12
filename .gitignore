@@ -44,3 +44,8 @@ theme.md
 
 app.flow.md
 .kiro
+
+
+docs
+.github
+docker-compose.yml
