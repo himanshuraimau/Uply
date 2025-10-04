@@ -32,7 +32,7 @@ export function RecentActivity({ activities, isLoading, error, onRetry }: Recent
   const getActivityColor = (type: string, status?: string) => {
     switch (type) {
       case 'STATUS_CHANGE':
-        return status === 'DOWN' ? 'text-destructive' : 'text-secondary';
+        return status === 'DOWN' ? 'text-destructive' : 'text-primary';
       case 'WEBSITE_ADDED':
         return 'text-primary';
       case 'WEBSITE_REMOVED':
@@ -47,10 +47,7 @@ export function RecentActivity({ activities, isLoading, error, onRetry }: Recent
 
     return (
       <Badge
-        className={`text-xs font-bold border-2 border-border ${status === 'UP'
-          ? 'bg-secondary text-secondary-foreground'
-          : 'bg-destructive text-destructive-foreground'
-          }`}
+        className="text-xs font-bold border-2 border-border uppercase bg-transparent text-foreground"
       >
         {status}
       </Badge>
@@ -59,9 +56,9 @@ export function RecentActivity({ activities, isLoading, error, onRetry }: Recent
 
   if (isLoading) {
     return (
-      <Card className="border-4 border-border bg-card">
-        <CardHeader className="border-b-4 border-border">
-          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-tight">
+      <Card className="tech-card">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-wide uppercase">
             RECENT ACTIVITY
           </CardTitle>
         </CardHeader>
@@ -79,9 +76,9 @@ export function RecentActivity({ activities, isLoading, error, onRetry }: Recent
 
   if (error) {
     return (
-      <Card className="border-4 border-border bg-card">
-        <CardHeader className="border-b-4 border-border">
-          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-tight">
+      <Card className="tech-card">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-wide uppercase">
             RECENT ACTIVITY
           </CardTitle>
         </CardHeader>
@@ -98,9 +95,9 @@ export function RecentActivity({ activities, isLoading, error, onRetry }: Recent
 
   if (activities.length === 0) {
     return (
-      <Card className="border-4 border-border bg-card">
-        <CardHeader className="border-b-4 border-border">
-          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-tight">
+      <Card className="tech-card">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-card-foreground font-sans tracking-wide uppercase">
             RECENT ACTIVITY
           </CardTitle>
         </CardHeader>

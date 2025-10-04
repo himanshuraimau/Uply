@@ -50,13 +50,13 @@ function DashboardLayoutContent({
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <nav className="border-b-4 border-border bg-card">
+      <nav className="border-b-2 border-border bg-card">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
-              <Link href="/dashboard" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary border-4 border-border"></div>
-                <h1 className="text-2xl font-bold text-card-foreground font-sans tracking-tight">UPLY</h1>
+              <Link href="/dashboard" className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary border-2 border-border animate-pulse-slow"></div>
+                <h1 className="text-2xl font-bold text-card-foreground font-sans tracking-wide uppercase">UPLY</h1>
               </Link>
               
               {/* Navigation */}
@@ -68,10 +68,10 @@ function DashboardLayoutContent({
                       key={item.name}
                       href={item.href}
                       className={cn(
-                        'flex items-center space-x-2 px-4 py-2 border-2 border-transparent font-bold text-sm uppercase tracking-wide transition-colors',
+                        'flex items-center space-x-2 px-4 py-2 border-2 font-bold text-sm uppercase tracking-wide transition-all hover-glow',
                         item.current
-                          ? 'border-border bg-background text-foreground'
-                          : 'text-muted-foreground hover:text-card-foreground hover:bg-muted'
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-transparent text-muted-foreground hover:text-card-foreground hover:border-border'
                       )}
                     >
                       <Icon className="h-4 w-4" />

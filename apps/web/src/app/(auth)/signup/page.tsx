@@ -51,32 +51,32 @@ export default function SignupPage() {
   };
 
   return (
-    <Card className="border-4 border-border bg-card shadow-xl">
-      <CardHeader className="border-b-4 border-border">
-        <CardTitle className="text-2xl font-bold text-center text-card-foreground font-sans tracking-tight">
+    <Card className="tech-card">
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold text-center text-card-foreground font-sans tracking-wide uppercase">
           JOIN UPLY
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-bold text-foreground uppercase tracking-wide">
+                  <FormLabel className="text-base font-bold text-foreground uppercase tracking-wide mb-3">
                     USERNAME
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="Choose a username"
-                      className="border-4 border-border focus:border-primary"
+                      className="border-2 border-border focus:border-primary hover-glow text-base"
                       disabled={isLoading}
                     />
                   </FormControl>
-                  <FormMessage className="text-destructive font-semibold" />
+                  <FormMessage className="text-destructive font-semibold text-sm mt-2" />
                 </FormItem>
               )}
             />
@@ -86,7 +86,7 @@ export default function SignupPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-bold text-foreground uppercase tracking-wide">
+                  <FormLabel className="text-base font-bold text-foreground uppercase tracking-wide mb-3">
                     PASSWORD
                   </FormLabel>
                   <FormControl>
@@ -95,26 +95,26 @@ export default function SignupPage() {
                         {...field}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Create a password"
-                        className="border-4 border-border focus:border-primary pr-12"
+                        className="border-2 border-border focus:border-primary hover-glow pr-14 text-base"
                         disabled={isLoading}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
                         disabled={isLoading}
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff className="h-5 w-5" />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-5 w-5" />
                         )}
                       </Button>
                     </div>
                   </FormControl>
-                  <FormMessage className="text-destructive font-semibold" />
+                  <FormMessage className="text-destructive font-semibold text-sm mt-2" />
                 </FormItem>
               )}
             />
@@ -124,7 +124,7 @@ export default function SignupPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-bold text-foreground uppercase tracking-wide">
+                  <FormLabel className="text-base font-bold text-foreground uppercase tracking-wide mb-3">
                     CONFIRM PASSWORD
                   </FormLabel>
                   <FormControl>
@@ -133,33 +133,33 @@ export default function SignupPage() {
                         {...field}
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="Confirm your password"
-                        className="border-4 border-border focus:border-primary pr-12"
+                        className="border-2 border-border focus:border-primary hover-glow pr-14 text-base"
                         disabled={isLoading}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-transparent"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         disabled={isLoading}
                       >
                         {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff className="h-5 w-5" />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-5 w-5" />
                         )}
                       </Button>
                     </div>
                   </FormControl>
-                  <FormMessage className="text-destructive font-semibold" />
+                  <FormMessage className="text-destructive font-semibold text-sm mt-2" />
                 </FormItem>
               )}
             />
 
             <Button
               type="submit"
-              className="w-full h-12 border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-bold text-lg"
+              className="w-full h-14 hover-glow font-bold text-lg uppercase tracking-wide mt-8"
               disabled={isLoading}
             >
               {isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
@@ -167,22 +167,22 @@ export default function SignupPage() {
           </form>
         </Form>
 
-        <div className="mt-6 text-center">
-          <p className="text-muted-foreground font-sans">
+        <div className="mt-8 text-center">
+          <p className="text-muted-foreground font-sans text-base">
             Already have an account?{' '}
             <Link 
               href="/login" 
-              className="font-bold text-primary hover:text-primary/80 uppercase tracking-wide"
+              className="font-bold text-primary hover:text-primary/80 uppercase tracking-wide transition-colors"
             >
               Login
             </Link>
           </p>
         </div>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center">
           <Link 
             href="/" 
-            className="text-sm text-muted-foreground hover:text-foreground font-medium"
+            className="text-sm text-muted-foreground hover:text-foreground font-medium uppercase tracking-wide transition-colors"
           >
             ← Back to Home
           </Link>

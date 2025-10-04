@@ -21,19 +21,19 @@ export function StatusIndicator({
       case 'UP':
         return {
           label: 'UP',
-          className: 'bg-secondary text-secondary-foreground border-4 border-border',
-          dotColor: 'bg-secondary',
+          className: 'bg-transparent text-foreground border-2 border-border font-bold',
+          dotColor: 'bg-primary',
         };
       case 'DOWN':
         return {
           label: 'DOWN',
-          className: 'bg-destructive text-destructive-foreground border-4 border-border',
+          className: 'bg-transparent text-foreground border-2 border-border font-bold',
           dotColor: 'bg-destructive',
         };
       default:
         return {
           label: 'UNKNOWN',
-          className: 'bg-muted text-muted-foreground border-4 border-border',
+          className: 'bg-transparent text-foreground border-2 border-border font-bold',
           dotColor: 'bg-muted-foreground',
         };
     }

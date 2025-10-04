@@ -55,9 +55,9 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
 
   const getUptimeColor = (uptime?: number) => {
     if (!uptime) return 'text-muted-foreground';
-    if (uptime >= 99) return 'text-secondary-foreground';
-    if (uptime >= 95) return 'text-accent-foreground';
-    return 'text-destructive';
+    if (uptime >= 99) return 'text-primary status-positive';
+    if (uptime >= 95) return 'text-accent';
+    return 'text-destructive status-negative';
   };
 
   return (

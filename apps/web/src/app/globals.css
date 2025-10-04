@@ -1,103 +1,124 @@
+/* Import futuristic fonts */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
 :root {
-  --background: oklch(1.0000 0 0);
-  --foreground: oklch(0 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0.6489 0.2370 26.9728);
-  --primary-foreground: oklch(1.0000 0 0);
-  --secondary: oklch(0.9680 0.2110 109.7692);
-  --secondary-foreground: oklch(0 0 0);
-  --muted: oklch(0.9551 0 0);
-  --muted-foreground: oklch(0.3211 0 0);
-  --accent: oklch(0.5635 0.2408 260.8178);
-  --accent-foreground: oklch(1.0000 0 0);
-  --destructive: oklch(0 0 0);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0 0 0);
-  --input: oklch(0 0 0);
-  --ring: oklch(0.6489 0.2370 26.9728);
-  --chart-1: oklch(0.6489 0.2370 26.9728);
-  --chart-2: oklch(0.9680 0.2110 109.7692);
-  --chart-3: oklch(0.5635 0.2408 260.8178);
-  --chart-4: oklch(0.7323 0.2492 142.4953);
-  --chart-5: oklch(0.5931 0.2726 328.3634);
-  --sidebar: oklch(0.9551 0 0);
-  --sidebar-foreground: oklch(0 0 0);
-  --sidebar-primary: oklch(0.6489 0.2370 26.9728);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.5635 0.2408 260.8178);
-  --sidebar-accent-foreground: oklch(1.0000 0 0);
-  --sidebar-border: oklch(0 0 0);
-  --sidebar-ring: oklch(0.6489 0.2370 26.9728);
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Light Mode (Alternative) - Based on Design System */
+  --background: #FAFAFA;
+  --foreground: #0A0A0A;
+  --card: #FFFFFF;
+  --card-foreground: #0A0A0A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0A0A0A;
+  --primary: #00CC6A; /* Tech Green */
+  --primary-foreground: #FFFFFF;
+  --secondary: #E5E5E5;
+  --secondary-foreground: #333333;
+  --muted: #E5E5E5;
+  --muted-foreground: #666666;
+  --accent: #00A8CC; /* Tech Cyan */
+  --accent-foreground: #FFFFFF;
+  --destructive: #E63946;
+  --destructive-foreground: #FFFFFF;
+  --border: #D4D4D4;
+  --input: #FFFFFF;
+  --ring: #00CC6A;
+  --chart-1: #00CC6A;
+  --chart-2: #00A8CC;
+  --chart-3: #0A0A0A;
+  --chart-4: #666666;
+  --chart-5: #E63946;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0A0A0A;
+  --sidebar-primary: #00CC6A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #00A8CC;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #E5E5E5;
+  --sidebar-ring: #00CC6A;
+  
+  /* Typography - Futuristic monospace primary */
+  --font-sans: 'IBM Plex Mono', 'Courier New', monospace;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  --radius: 0px;
-  --shadow-2xs: 4px 4px 0px 0px hsl(0 0% 0% / 0.50);
-  --shadow-xs: 4px 4px 0px 0px hsl(0 0% 0% / 0.50);
-  --shadow-sm: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 1px 2px -1px hsl(0 0% 0% / 1.00);
-  --shadow: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 1px 2px -1px hsl(0 0% 0% / 1.00);
-  --shadow-md: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 2px 4px -1px hsl(0 0% 0% / 1.00);
-  --shadow-lg: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 4px 6px -1px hsl(0 0% 0% / 1.00);
-  --shadow-xl: 4px 4px 0px 0px hsl(0 0% 0% / 1.00), 4px 8px 10px -1px hsl(0 0% 0% / 1.00);
-  --shadow-2xl: 4px 4px 0px 0px hsl(0 0% 0% / 2.50);
-  --tracking-normal: 0em;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  
+  /* Design System Spacing & Layout */
+  --radius: 6px; /* Slightly rounded edges as per design */
   --spacing: 0.25rem;
+  --section-padding: 5rem; /* 80px */
+  --block-padding: 3rem; /* 48px */  
+  --base-padding: 1.5rem; /* 24px */
+  
+  /* Light Mode Shadows - Subtle */
+  --shadow-2xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08), 0 10px 10px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+  
+  /* Accent glow for light mode */
+  --glow-green: rgba(0, 204, 106, 0.15);
+  --glow-cyan: rgba(0, 168, 204, 0.15);
+  
+  --tracking-normal: 0.025em; /* Slightly wider tracking for technical feel */
 }
 
 .dark {
-  --background: oklch(0.08 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.11 0.005 240);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.11 0.005 240);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.70 0.24 27);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.14 0.01 240);
-  --secondary-foreground: oklch(0.85 0 0);
-  --muted: oklch(0.13 0.01 240);
-  --muted-foreground: oklch(0.60 0 0);
-  --accent: oklch(0.58 0.22 260);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.62 0.28 20);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.18 0.01 240);
-  --input: oklch(0.11 0.005 240);
-  --ring: oklch(0.70 0.24 27);
-  --chart-1: oklch(0.70 0.24 27);
-  --chart-2: oklch(0.65 0.25 110);
-  --chart-3: oklch(0.58 0.22 260);
-  --chart-4: oklch(0.68 0.25 142);
-  --chart-5: oklch(0.60 0.25 328);
-  --sidebar: oklch(0.09 0.003 240);
-  --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.70 0.24 27);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.58 0.22 260);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.16 0.01 240);
-  --sidebar-ring: oklch(0.70 0.24 27);
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  --radius: 0px;
-  --shadow-2xs: 4px 4px 0px 0px hsl(240 3% 6% / 0.90);
-  --shadow-xs: 4px 4px 0px 0px hsl(240 3% 6% / 0.90);
-  --shadow-sm: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 1px 2px -1px hsl(240 3% 6% / 0.95);
-  --shadow: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 1px 2px -1px hsl(240 3% 6% / 0.95);
-  --shadow-md: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 2px 4px -1px hsl(240 3% 6% / 0.95);
-  --shadow-lg: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 4px 6px -1px hsl(240 3% 6% / 0.95);
-  --shadow-xl: 4px 4px 0px 0px hsl(240 3% 6% / 0.95), 4px 8px 10px -1px hsl(240 3% 6% / 0.95);
-  --shadow-2xl: 4px 4px 0px 0px hsl(240 3% 6% / 1.0);
+  /* Dark Mode (Primary) - Based on Design System */
+  --background: #000000; /* Core Black Background */
+  --foreground: #FFFFFF; /* Primary White Text */
+  --card: #0A0A0A; /* Section Background - Dark Gray */
+  --card-foreground: #FFFFFF;
+  --popover: #0A0A0A;
+  --popover-foreground: #FFFFFF;
+  --primary: #00FF85; /* Neon Green */
+  --primary-foreground: #000000;
+  --secondary: #0A0A0A;
+  --secondary-foreground: #CCCCCC; /* Light Gray Secondary */
+  --muted: #0A0A0A;
+  --muted-foreground: #888888; /* Medium Gray Muted */
+  --accent: #3DDCFF; /* Cyan */
+  --accent-foreground: #000000;
+  --destructive: #FF3B3B; /* Negative Trend Red */
+  --destructive-foreground: #FFFFFF;
+  --border: #333333; /* Subtle border for dark mode */
+  --input: #0A0A0A;
+  --ring: #00FF85;
+  --chart-1: #00FF85;
+  --chart-2: #3DDCFF;
+  --chart-3: #FFFFFF;
+  --chart-4: #888888;
+  --chart-5: #FF3B3B;
+  --sidebar: #0A0A0A;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #00FF85;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #3DDCFF;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #333333;
+  --sidebar-ring: #00FF85;
+  
+  /* Dark Mode Shadows - Glowing Effects */
+  --shadow-2xs: 0 0 4px rgba(0, 255, 133, 0.1);
+  --shadow-xs: 0 0 6px rgba(0, 255, 133, 0.1);
+  --shadow-sm: 0 0 8px rgba(0, 255, 133, 0.15), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow: 0 0 12px rgba(0, 255, 133, 0.15), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 0 16px rgba(0, 255, 133, 0.2), 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 0 20px rgba(0, 255, 133, 0.2), 0 10px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 0 24px rgba(0, 255, 133, 0.25), 0 20px 25px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 0 32px rgba(0, 255, 133, 0.3), 0 25px 50px rgba(0, 0, 0, 0.5);
+  
+  /* Neon glow effects for dark mode */
+  --glow-green: rgba(0, 255, 133, 0.3);
+  --glow-cyan: rgba(61, 220, 255, 0.3);
 }
 
-/* biome-ignore lint/suspicious/noUnknownAtRules: <explanation> */
+/* biome-ignore lint/suspicious/noUnknownAtRules: tailwind @theme directive */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -136,10 +157,10 @@
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
 
   --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
@@ -149,4 +170,128 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+}
+
+/* Base styles for futuristic tech design */
+* {
+  border-color: var(--border);
+}
+
+body {
+  font-family: var(--font-sans);
+  letter-spacing: var(--tracking-normal);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Typography - Technical aesthetic */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+}
+
+/* Technical button styles */
+.btn-tech {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+/* Neon glow effects for dark mode */
+.dark .glow-primary {
+  box-shadow: 0 0 20px var(--glow-green);
+}
+
+.dark .glow-accent {
+  box-shadow: 0 0 20px var(--glow-cyan);
+}
+
+/* Hover effects for interactive elements */
+.hover-glow:hover {
+  box-shadow: 0 0 8px var(--glow-green);
+  border-color: var(--primary);
+}
+
+.dark .hover-glow:hover {
+  box-shadow: 0 0 16px var(--glow-green);
+  border-color: var(--primary);
+}
+
+/* Grid-based layout utilities */
+.section-padding {
+  padding: var(--section-padding);
+}
+
+.block-padding {
+  padding: var(--block-padding);
+}
+
+.base-padding {
+  padding: var(--base-padding);
+}
+
+/* Status indicators for data */
+.status-positive {
+  color: var(--chart-1);
+}
+
+.status-negative {
+  color: var(--destructive);
+}
+
+/* Technical card styling */
+.tech-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+}
+
+.tech-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.dark .tech-card:hover {
+  box-shadow: 0 0 20px var(--glow-green), var(--shadow-lg);
+}
+
+/* Ticker-style elements */
+.ticker {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Network visualization container */
+.network-viz {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+/* Animation utilities */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px var(--glow-green);
+  }
+  to {
+    box-shadow: 0 0 20px var(--glow-green), 0 0 30px var(--glow-green);
+  }
 }
