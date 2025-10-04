@@ -1,8 +1,7 @@
-import { xReadGroup, xAckBulk } from "@uply/redis/client";
+import { xReadGroup, xAckBulk, publishWebsiteTick } from "@uply/redis/client";
 import { prisma } from "store/client";
 import axios, { type AxiosError } from "axios";
 import { createServer } from "node:http";
-
 
 const REGION_NAME = process.env.REGION_NAME || "india";
 const WORKER_ID = process.env.WORKER_ID || "0";
@@ -357,11 +356,39 @@ async function fetchWebsite(url: string, websiteId: string, regionId: string, me
             
             console.log(`💾 Storing tick for ${url}:`, tickData);
             
-            await prisma.websiteTick.create({
-                data: tickData
+            const createdTick = await prisma.websiteTick.create({
+                data: tickData,
+                include: {
+                    website: {
+                        select: {
+                            user_id: true
+                        }
+                    },
+                    region: {
+                        select: {
+                            name: true
+                        }
+                    }
+                }
             });
             
             console.log(`✅ Successfully stored tick for ${url}: ${status} (${responseTime}ms)`);
+            
+            // Publish to Redis pub/sub for real-time updates
+            try {
+                await publishWebsiteTick({
+                    websiteId,
+                    userId: createdTick.website.user_id,
+                    status,
+                    responseTime,
+                    checkedAt: createdTick.createdAt.toISOString(),
+                    region: createdTick.region.name
+                });
+                console.log(`📡 Published tick event for website ${websiteId} to user ${createdTick.website.user_id}`);
+            } catch (pubsubError) {
+                // Don't fail the whole operation if pub/sub fails
+                console.error(`⚠️ Failed to publish tick event (non-critical):`, pubsubError);
+            }
             
         } catch (dbError) {
             const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);

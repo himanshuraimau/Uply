@@ -143,7 +143,7 @@ function WebsiteDetailPageContent() {
             <Button
               variant="outline"
               onClick={() => router.back()}
-              className="border-4 border-border hover:bg-muted font-semibold"
+              className="border-4 border-border font-semibold"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               BACK
@@ -162,7 +162,7 @@ function WebsiteDetailPageContent() {
             <Button
               variant="outline"
               onClick={handleVisitWebsite}
-              className="border-4 border-border hover:bg-muted font-semibold"
+              className="border-4 border-border font-semibold"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               VISIT
@@ -170,8 +170,8 @@ function WebsiteDetailPageContent() {
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
               <DialogTrigger asChild>
                 <Button
-                  variant="outline"
-                  className="border-4 border-border hover:bg-destructive hover:text-destructive-foreground font-semibold"
+                variant={"destructive"}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/80 font-semibold"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   DELETE
@@ -197,7 +197,7 @@ function WebsiteDetailPageContent() {
                     <Button
                       variant="outline"
                       onClick={() => setShowDeleteDialog(false)}
-                      className="flex-1 border-4 border-border hover:bg-muted font-semibold"
+                      className="flex-1 border-4 border-border hover:bg-foreground font-semibold"
                       disabled={isDeleting}
                     >
                       CANCEL

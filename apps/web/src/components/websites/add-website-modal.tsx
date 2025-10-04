@@ -108,7 +108,7 @@ export function AddWebsiteModal({ trigger }: AddWebsiteModalProps) {
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
-                  className="flex-1 border-4 border-border hover:bg-muted font-semibold"
+                  className="flex-1 border-4 border-border hover:bg-foreground font-semibold"
                   disabled={isSubmitting}
                 >
                   CANCEL

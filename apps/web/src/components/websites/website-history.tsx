@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -35,7 +35,7 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchHistory = async (offset: number = 0, append: boolean = false) => {
+  const fetchHistory = useCallback(async (offset: number = 0, append: boolean = false) => {
     if (!token || !websiteId) return;
 
     try {
@@ -65,11 +65,11 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
       setIsLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [websiteId, token]);
 
   useEffect(() => {
     fetchHistory();
-  }, [websiteId, token]);
+  }, [fetchHistory]);
 
   const loadMore = () => {
     fetchHistory(history.length, true);
@@ -163,7 +163,7 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
             <Button
               variant="outline"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="border-4 border-border hover:bg-muted font-semibold"
+              className="border-4 border-border font-semibold"
             >
               {isExpanded ? (
                 <>

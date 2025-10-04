@@ -91,7 +91,7 @@ function DashboardLayoutContent({
               <Button
                 variant="outline"
                 onClick={logout}
-                className="border-4 border-border hover:bg-destructive hover:text-destructive-foreground font-semibold"
+                className="border-2 border-transparent hover:bg-destructive hover:text-destructive-foreground font-semibold"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 LOGOUT

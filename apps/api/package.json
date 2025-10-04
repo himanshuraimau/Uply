@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/cors": "^2.8.19"
+    "@types/cors": "^2.8.19",
+    "@types/socket.io": "^3.0.2"
   },
   "peerDependencies": {
     "typescript": "^5",
@@ -22,6 +23,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.8.1",
     "zod": "^4.1.5"
   }
 }

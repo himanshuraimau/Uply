@@ -2,7 +2,9 @@ import { createClient } from "redis";
 
 
 const STREAM_NAME = 'uply:website';
+const PUBSUB_CHANNEL = 'uply:website:ticks';
 
+// Main client for streams
 const client = await createClient({
     url: process.env.REDIS_URL || 'redis://localhost:6379'
 })
@@ -10,6 +12,25 @@ const client = await createClient({
         console.log('Redis Client Error', err);
     })
     .connect();
+
+// Separate clients for pub/sub (Redis requires separate connections)
+const publisher = await createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379'
+})
+    .on('error', (err) => {
+        console.error('❌ Redis Publisher Error:', err);
+    })
+    .connect();
+
+const subscriber = await createClient({
+    url: process.env.REDIS_URL || 'redis://localhost:6379'
+})
+    .on('error', (err) => {
+        console.error('❌ Redis Subscriber Error:', err);
+    })
+    .connect();
+
+console.log('✅ Redis clients connected (stream, pub, sub)');
 
 type WebsiteEvent = {
     url: string;
@@ -103,4 +124,57 @@ export async function xAckBulk(consumerGroup: string, eventIds: string[]) {
         throw error; // Re-throw to let consumer handle the error
     }
 }
-export { client };
+
+// ============= Pub/Sub for Real-Time Updates =============
+
+export interface WebsiteTickEvent {
+    websiteId: string;
+    userId: string;
+    status: 'UP' | 'DOWN';
+    responseTime: number;
+    checkedAt: string;
+    region: string;
+}
+
+// Publish a website tick event
+export async function publishWebsiteTick(data: WebsiteTickEvent): Promise<void> {
+    try {
+        await publisher.publish(PUBSUB_CHANNEL, JSON.stringify(data));
+        console.log(`📡 Published tick for website ${data.websiteId}`);
+    } catch (error) {
+        console.error('❌ Failed to publish tick:', error);
+        throw error;
+    }
+}
+
+// Subscribe to website tick events
+export async function subscribeToWebsiteTicks(
+    callback: (data: WebsiteTickEvent) => void
+): Promise<void> {
+    try {
+        await subscriber.subscribe(PUBSUB_CHANNEL, (message) => {
+            try {
+                const data = JSON.parse(message) as WebsiteTickEvent;
+                callback(data);
+            } catch (error) {
+                console.error('❌ Failed to parse tick message:', error);
+            }
+        });
+        console.log(`✅ Subscribed to ${PUBSUB_CHANNEL}`);
+    } catch (error) {
+        console.error('❌ Failed to subscribe:', error);
+        throw error;
+    }
+}
+
+// Cleanup function for graceful shutdown
+export async function closeRedisConnections(): Promise<void> {
+    console.log('🔌 Closing Redis connections...');
+    await Promise.all([
+        client.quit(),
+        publisher.quit(),
+        subscriber.quit()
+    ]);
+}
+
+export { client, publisher, subscriber };

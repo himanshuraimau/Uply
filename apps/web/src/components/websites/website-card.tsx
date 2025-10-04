@@ -119,7 +119,7 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
                     <Button
                       variant="outline"
                       onClick={() => setShowDeleteDialog(false)}
-                      className="flex-1 border-4 border-border hover:bg-muted font-semibold"
+                      className="flex-1 border-4 border-border hover:bg-foreground font-semibold"
                       disabled={isDeleting}
                     >
                       CANCEL
