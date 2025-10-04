@@ -181,7 +181,7 @@ export function createWebsiteRoutes(
             console.error('Error creating website:', {
                 error: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
-                userId: (req as any).userId,
+                userId: req.userId,
                 requestBody: req.body,
                 timestamp: new Date().toISOString()
             });
@@ -210,11 +210,16 @@ export function createWebsiteRoutes(
     // Get single website details
     router.get('/:websiteId', authMiddleware, async (req, res) => {
         try {
+            const userId = req.userId;
+            if (!userId) {
+                return res.status(401).json({ error: "User not authenticated" });
+            }
+
             const { websiteId } = req.params;
             const website = await prisma.website.findFirst({
                 where: {
                     id: websiteId,
-                    user_id: (req as any).userId
+                    user_id: userId
                 },
                 include: {
                     ticks: {
@@ -233,7 +238,7 @@ export function createWebsiteRoutes(
             console.error('Error fetching website:', {
                 error: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
-                userId: (req as any).userId,
+                userId: req.userId,
                 websiteId: req.params.websiteId,
                 timestamp: new Date().toISOString()
             });
@@ -255,6 +260,11 @@ export function createWebsiteRoutes(
     // Update website
     router.put('/:websiteId', authMiddleware, async (req, res) => {
         try {
+            const userId = req.userId;
+            if (!userId) {
+                return res.status(401).json({ error: "User not authenticated" });
+            }
+
             const { websiteId } = req.params;
             const data = WebsiteInputSchema.partial().safeParse(req.body);
 
@@ -268,7 +278,7 @@ export function createWebsiteRoutes(
             const website = await prisma.website.updateMany({
                 where: {
                     id: websiteId,
-                    user_id: (req as any).userId
+                    user_id: userId
                 },
                 data: data.data
             });
@@ -286,7 +296,7 @@ export function createWebsiteRoutes(
             console.error('Error updating website:', {
                 error: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
-                userId: (req as any).userId,
+                userId: req.userId,
                 websiteId: req.params.websiteId,
                 requestBody: req.body,
                 timestamp: new Date().toISOString()
@@ -309,8 +319,12 @@ export function createWebsiteRoutes(
     // Delete website
     router.delete('/:websiteId', authMiddleware, async (req, res) => {
         try {
+            // First verify userId exists, then use a type assertion to tell TypeScript it's definitely a string
+            if (!req.userId) {
+                return res.status(401).json({ error: "User not authenticated" });
+            }
+            const userId = req.userId as string;
             const { websiteId } = req.params;
-            const userId = (req as any).userId as string;
 
             const website = await prisma.website.findFirst({
                 where: {
@@ -338,7 +352,7 @@ export function createWebsiteRoutes(
             console.error('Error deleting website:', {
                 error: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
-                userId: (req as any).userId,
+                userId: req.userId,
                 websiteId: req.params.websiteId,
                 timestamp: new Date().toISOString()
             });
@@ -372,11 +386,16 @@ export function createWebsiteRoutes(
 
             const { limit, offset } = query.data;
 
+            const userId = req.userId;
+            if (!userId) {
+                return res.status(401).json({ error: "User not authenticated" });
+            }
+            
             // Verify website belongs to user
             const website = await prisma.website.findFirst({
                 where: {
                     id: websiteId,
-                    user_id: (req as any).userId
+                    user_id: userId
                 }
             });
 
@@ -411,7 +430,7 @@ export function createWebsiteRoutes(
             console.error('Error fetching history:', {
                 error: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,
-                userId: (req as any).userId,
+                userId: req.userId,
                 websiteId: req.params.websiteId,
                 query: req.query,
                 timestamp: new Date().toISOString()

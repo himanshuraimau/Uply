@@ -28,7 +28,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
-        (req as any).userId = decoded.userId;
+        req.userId = decoded.userId;
         next();
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError) {

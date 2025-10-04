@@ -128,14 +128,34 @@ export function setupWebSocket(httpServer: HTTPServer) {
 }
 
 // Helper function to emit website added event
-export function emitWebsiteAdded(io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>, userId: string, website: unknown) {
+export function emitWebsiteAdded(
+    io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>, 
+    userId: string | undefined, 
+    website: unknown
+) {
+    // Skip if no userId
+    if (!userId) {
+        console.log('⚠️ Cannot emit website:added event, userId is undefined');
+        return;
+    }
+    
     const userRoom = `user:${userId}`;
     io.to(userRoom).emit('website:added', { website });
     console.log(`📢 Emitted website:added to ${userRoom}`);
 }
 
 // Helper function to emit website deleted event
-export function emitWebsiteDeleted(io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>, userId: string, websiteId: string) {
+export function emitWebsiteDeleted(
+    io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>, 
+    userId: string | undefined, 
+    websiteId: string
+) {
+    // Skip if no userId
+    if (!userId) {
+        console.log('⚠️ Cannot emit website:deleted event, userId is undefined');
+        return;
+    }
+    
     const userRoom = `user:${userId}`;
     io.to(userRoom).emit('website:deleted', { websiteId });
     console.log(`📢 Emitted website:deleted to ${userRoom}`);
