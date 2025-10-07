@@ -3,9 +3,20 @@ import type {
   WebsiteWithStatus,
   DashboardData,
   AddWebsiteData,
+  WebsiteStatusTick,
+  WebsiteHistoryResponse,
+  WebsiteHistoryApiResponse,
 } from '@/types/website';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+interface ApiErrorResponse {
+  error?: string;
+  code?: string;
+  requestId?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -45,10 +56,10 @@ class ApiClient {
       const response = await fetch(url, config);
 
       // Handle different response types
-      let data: any;
+      let data: unknown;
       const contentType = response.headers.get('content-type');
 
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType?.includes('application/json')) {
         data = await response.json();
       } else {
         // Handle non-JSON responses
@@ -61,12 +72,13 @@ class ApiClient {
 
       if (!response.ok) {
         // Enhanced error handling based on status codes
-        let userFriendlyMessage = data.error || 'Request failed';
+        const errorData = (data ?? {}) as ApiErrorResponse;
+        let userFriendlyMessage = errorData.error || 'Request failed';
 
         switch (response.status) {
           case 400:
             userFriendlyMessage =
-              data.error ||
+              errorData.error ||
               'Invalid request. Please check your input and try again.';
             break;
           case 401:
@@ -81,7 +93,8 @@ class ApiClient {
             userFriendlyMessage = 'The requested resource was not found.';
             break;
           case 409:
-            userFriendlyMessage = data.error || 'This resource already exists.';
+            userFriendlyMessage =
+              errorData.error || 'This resource already exists.';
             break;
           case 429:
             userFriendlyMessage =
@@ -99,19 +112,20 @@ class ApiClient {
             break;
           default:
             userFriendlyMessage =
-              data.error || `Request failed with status ${response.status}`;
+              errorData.error ||
+              `Request failed with status ${response.status}`;
         }
 
-        throw new ApiError(userFriendlyMessage, data.code, {
+        throw new ApiError(userFriendlyMessage, errorData.code, {
           status: response.status,
           statusText: response.statusText,
-          originalError: data.error,
-          requestId: data.requestId,
-          timestamp: data.timestamp,
+          originalError: errorData.error,
+          requestId: errorData.requestId,
+          timestamp: errorData.timestamp,
         });
       }
 
-      return data;
+      return data as T;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
@@ -229,7 +243,10 @@ class ApiClient {
     });
   }
 
-  async getWebsiteStatus(websiteId: string, token?: string): Promise<any> {
+  async getWebsiteStatus(
+    websiteId: string,
+    token?: string,
+  ): Promise<WebsiteStatusTick> {
     return this.request(`/status/${websiteId}`, {
       method: 'GET',
       headers: this.getAuthHeaders(token),
@@ -241,14 +258,20 @@ class ApiClient {
     limit: number = 50,
     offset: number = 0,
     token?: string,
-  ): Promise<any> {
-    return this.request(
+  ): Promise<WebsiteHistoryResponse> {
+    const response = await this.request<WebsiteHistoryApiResponse>(
       `/website/${websiteId}/history?limit=${limit}&offset=${offset}`,
       {
         method: 'GET',
         headers: this.getAuthHeaders(token),
       },
     );
+
+    return {
+      data: response.data,
+      history: response.history ?? response.data,
+      pagination: response.pagination,
+    };
   }
 
   async getDashboard(token?: string): Promise<DashboardData> {
@@ -261,7 +284,7 @@ class ApiClient {
   // Test API connection
   async testConnection(): Promise<{ status: string; healthy: boolean }> {
     try {
-      const response = await this.request<any>('/health');
+      const response = await this.request<{ status: string }>('/health');
       return { status: 'connected', healthy: response.status === 'healthy' };
     } catch (error) {
       if (error instanceof ApiError && error.code === 'CONNECTION_REFUSED') {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, type ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,13 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: any) => void;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
-  errorInfo?: any;
+  errorInfo: ErrorInfo | null;
   retryCount: number;
 }
 
@@ -23,6 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
     super(props);
     this.state = {
       hasError: false,
+      errorInfo: null,
       retryCount: 0,
     };
   }
@@ -31,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
 
     // Enhanced error logging
@@ -51,8 +52,12 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     // Report to error tracking service (if available)
-    if (typeof window !== 'undefined' && (window as any).reportError) {
-      (window as any).reportError(error);
+    if (typeof window !== 'undefined') {
+      const reporter = window as Window & {
+        reportError?: (error: Error) => void;
+      };
+
+      reporter.reportError?.(error);
     }
   }
 
@@ -60,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState((prevState) => ({
       hasError: false,
       error: undefined,
-      errorInfo: undefined,
+      errorInfo: null,
       retryCount: prevState.retryCount + 1,
     }));
   };

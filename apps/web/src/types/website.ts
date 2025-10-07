@@ -17,6 +17,18 @@ export interface WebsiteStatus {
   region: string;
 }
 
+export interface WebsiteStatusTick {
+  id: string;
+  website_id: string;
+  status: 'UP' | 'DOWN' | 'Unknown';
+  response_time_ms: number;
+  createdAt: string;
+  region: {
+    id?: string;
+    name: string;
+  };
+}
+
 export interface WebsiteWithStatus extends Website {
   currentStatus?: WebsiteStatus;
   uptime?: number;
@@ -39,6 +51,25 @@ export interface DashboardData {
   stats: DashboardStats;
   websites: WebsiteWithStatus[];
   recentActivity: ActivityItem[];
+}
+
+export interface WebsiteHistoryPagination {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+export interface WebsiteHistoryApiResponse {
+  data: WebsiteStatusTick[];
+  pagination: WebsiteHistoryPagination;
+  history?: WebsiteStatusTick[];
+}
+
+export interface WebsiteHistoryResponse {
+  data: WebsiteStatusTick[];
+  history: WebsiteStatusTick[];
+  pagination: WebsiteHistoryPagination;
 }
 
 export interface ActivityItem {
