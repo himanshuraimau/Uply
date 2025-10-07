@@ -203,7 +203,7 @@ export function useWebsites() {
                     region: statusData.region,
                   }
                 : {
-                    id: website.id + '_status',
+                    id: `${website.id}_status`,
                     websiteId: website.id,
                     status: statusData.status,
                     responseTime: statusData.responseTime,
