@@ -21,9 +21,9 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      retryCount: 0 
+    this.state = {
+      hasError: false,
+      retryCount: 0,
     };
   }
 
@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     this.setState({ errorInfo });
-    
+
     // Enhanced error logging
     console.error('🚨 Error boundary caught an error:', {
       error: error.message,
@@ -42,14 +42,14 @@ export class ErrorBoundary extends Component<Props, State> {
       timestamp: new Date().toISOString(),
       retryCount: this.state.retryCount,
       userAgent: navigator.userAgent,
-      url: window.location.href
+      url: window.location.href,
     });
-    
+
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-    
+
     // Report to error tracking service (if available)
     if (typeof window !== 'undefined' && (window as any).reportError) {
       (window as any).reportError(error);
@@ -57,11 +57,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: undefined,
       errorInfo: undefined,
-      retryCount: prevState.retryCount + 1
+      retryCount: prevState.retryCount + 1,
     }));
   };
 
@@ -84,32 +84,37 @@ export class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="p-6 text-center space-y-4">
               {(() => {
-                const isNetworkError = this.state.error?.message.includes('fetch') || 
-                                      this.state.error?.message.includes('network');
-                const isChunkError = this.state.error?.message.includes('Loading chunk') ||
-                                    this.state.error?.message.includes('ChunkLoadError');
+                const isNetworkError =
+                  this.state.error?.message.includes('fetch') ||
+                  this.state.error?.message.includes('network');
+                const isChunkError =
+                  this.state.error?.message.includes('Loading chunk') ||
+                  this.state.error?.message.includes('ChunkLoadError');
 
                 if (isChunkError) {
                   return (
                     <p className="text-muted-foreground font-sans">
-                      The application needs to be refreshed to load the latest version.
+                      The application needs to be refreshed to load the latest
+                      version.
                     </p>
                   );
                 } else if (isNetworkError) {
                   return (
                     <p className="text-muted-foreground font-sans">
-                      A network error occurred. Please check your connection and try again.
+                      A network error occurred. Please check your connection and
+                      try again.
                     </p>
                   );
                 } else {
                   return (
                     <p className="text-muted-foreground font-sans">
-                      An unexpected error occurred. This has been logged and will be investigated.
+                      An unexpected error occurred. This has been logged and
+                      will be investigated.
                     </p>
                   );
                 }
               })()}
-              
+
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <div className="text-left p-4 bg-muted border-2 border-border">
                   <p className="text-xs font-mono text-destructive break-all">
@@ -117,19 +122,20 @@ export class ErrorBoundary extends Component<Props, State> {
                   </p>
                 </div>
               )}
-              
+
               <div className="flex gap-3 justify-center">
-                {this.state.retryCount < 3 && !this.state.error?.message.includes('Loading chunk') && (
-                  <Button
-                    onClick={this.handleRetry}
-                    variant="outline"
-                    className="border-2 border-border font-bold"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    TRY AGAIN
-                  </Button>
-                )}
-                
+                {this.state.retryCount < 3 &&
+                  !this.state.error?.message.includes('Loading chunk') && (
+                    <Button
+                      onClick={this.handleRetry}
+                      variant="outline"
+                      className="border-2 border-border font-bold"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      TRY AGAIN
+                    </Button>
+                  )}
+
                 <Button
                   onClick={() => window.location.reload()}
                   className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-bold"
@@ -138,7 +144,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   REFRESH PAGE
                 </Button>
               </div>
-              
+
               {this.state.retryCount > 0 && (
                 <p className="text-xs text-muted-foreground">
                   Retry attempts: {this.state.retryCount}

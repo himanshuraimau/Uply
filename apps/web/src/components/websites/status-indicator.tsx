@@ -10,30 +10,33 @@ interface StatusIndicatorProps {
   showResponseTime?: boolean;
 }
 
-export function StatusIndicator({ 
-  status, 
-  responseTime, 
+export function StatusIndicator({
+  status,
+  responseTime,
   className,
-  showResponseTime = true 
+  showResponseTime = true,
 }: StatusIndicatorProps) {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'UP':
         return {
           label: 'UP',
-          className: 'bg-transparent text-foreground border-2 border-border font-bold',
+          className:
+            'bg-transparent text-foreground border-2 border-border font-bold',
           dotColor: 'bg-primary',
         };
       case 'DOWN':
         return {
           label: 'DOWN',
-          className: 'bg-transparent text-foreground border-2 border-border font-bold',
+          className:
+            'bg-transparent text-foreground border-2 border-border font-bold',
           dotColor: 'bg-destructive',
         };
       default:
         return {
           label: 'UNKNOWN',
-          className: 'bg-transparent text-foreground border-2 border-border font-bold',
+          className:
+            'bg-transparent text-foreground border-2 border-border font-bold',
           dotColor: 'bg-muted-foreground',
         };
     }

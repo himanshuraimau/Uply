@@ -1,5 +1,9 @@
 import type { AuthResponse, SignupData, LoginData, User } from '@/types/auth';
-import type { WebsiteWithStatus, DashboardData, AddWebsiteData } from '@/types/website';
+import type {
+  WebsiteWithStatus,
+  DashboardData,
+  AddWebsiteData,
+} from '@/types/website';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -7,7 +11,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public details?: unknown
+    public details?: unknown,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -23,10 +27,10 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const config: RequestInit = {
       ...options,
       headers: {
@@ -39,32 +43,39 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle different response types
-      let data:any;
+      let data: any;
       const contentType = response.headers.get('content-type');
-      
+
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
       } else {
         // Handle non-JSON responses
         const text = await response.text();
-        data = { error: text || 'Invalid response format', code: 'INVALID_RESPONSE' };
+        data = {
+          error: text || 'Invalid response format',
+          code: 'INVALID_RESPONSE',
+        };
       }
 
       if (!response.ok) {
         // Enhanced error handling based on status codes
         let userFriendlyMessage = data.error || 'Request failed';
-        
+
         switch (response.status) {
           case 400:
-            userFriendlyMessage = data.error || 'Invalid request. Please check your input and try again.';
+            userFriendlyMessage =
+              data.error ||
+              'Invalid request. Please check your input and try again.';
             break;
           case 401:
-            userFriendlyMessage = 'Your session has expired. Please log in again.';
+            userFriendlyMessage =
+              'Your session has expired. Please log in again.';
             break;
           case 403:
-            userFriendlyMessage = 'You do not have permission to perform this action.';
+            userFriendlyMessage =
+              'You do not have permission to perform this action.';
             break;
           case 404:
             userFriendlyMessage = 'The requested resource was not found.';
@@ -73,26 +84,30 @@ class ApiClient {
             userFriendlyMessage = data.error || 'This resource already exists.';
             break;
           case 429:
-            userFriendlyMessage = 'Too many requests. Please wait a moment and try again.';
+            userFriendlyMessage =
+              'Too many requests. Please wait a moment and try again.';
             break;
           case 500:
-            userFriendlyMessage = 'A server error occurred. Please try again later.';
+            userFriendlyMessage =
+              'A server error occurred. Please try again later.';
             break;
           case 502:
           case 503:
           case 504:
-            userFriendlyMessage = 'The monitoring service is temporarily unavailable. Please try again in a few minutes.';
+            userFriendlyMessage =
+              'The monitoring service is temporarily unavailable. Please try again in a few minutes.';
             break;
           default:
-            userFriendlyMessage = data.error || `Request failed with status ${response.status}`;
+            userFriendlyMessage =
+              data.error || `Request failed with status ${response.status}`;
         }
-        
+
         throw new ApiError(userFriendlyMessage, data.code, {
           status: response.status,
           statusText: response.statusText,
           originalError: data.error,
           requestId: data.requestId,
-          timestamp: data.timestamp
+          timestamp: data.timestamp,
         });
       }
 
@@ -101,45 +116,50 @@ class ApiClient {
       if (error instanceof ApiError) {
         throw error;
       }
-      
+
       // Handle different types of network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
         // Check if it's a connection refused error (server not running)
-        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        if (
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError')
+        ) {
           throw new ApiError(
             'Unable to connect to the monitoring service. Please ensure the API server is running on port 3001 and try again.',
             'CONNECTION_REFUSED',
-            { originalError: error.message, apiUrl: this.baseUrl }
+            { originalError: error.message, apiUrl: this.baseUrl },
           );
         }
         throw new ApiError(
           'Unable to connect to the monitoring service. Please check your internet connection and try again.',
           'NETWORK_ERROR',
-          { originalError: error.message }
+          { originalError: error.message },
         );
       }
-      
+
       if (error instanceof DOMException && error.name === 'AbortError') {
         throw new ApiError(
           'Request timed out. The monitoring service may be experiencing high load. Please try again.',
           'TIMEOUT_ERROR',
-          { originalError: error.message }
+          { originalError: error.message },
         );
       }
-      
+
       if (error instanceof DOMException && error.name === 'TimeoutError') {
         throw new ApiError(
           'Request timed out. Please try again.',
           'TIMEOUT_ERROR',
-          { originalError: error.message }
+          { originalError: error.message },
         );
       }
-      
+
       // Generic network error
       throw new ApiError(
         'A network error occurred. Please check your connection and try again.',
         'NETWORK_ERROR',
-        { originalError: error instanceof Error ? error.message : String(error) }
+        {
+          originalError: error instanceof Error ? error.message : String(error),
+        },
       );
     }
   }
@@ -155,7 +175,9 @@ class ApiClient {
   }
 
   // Auth endpoints
-  async signup(data: SignupData): Promise<{ id: string; username: string; message: string }> {
+  async signup(
+    data: SignupData,
+  ): Promise<{ id: string; username: string; message: string }> {
     return this.request('/user/signup', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -177,14 +199,19 @@ class ApiClient {
   }
 
   // Website endpoints
-  async getWebsites(token?: string): Promise<{ websites: WebsiteWithStatus[] }> {
+  async getWebsites(
+    token?: string,
+  ): Promise<{ websites: WebsiteWithStatus[] }> {
     return this.request('/websites', {
       method: 'GET',
       headers: this.getAuthHeaders(token),
     });
   }
 
-  async addWebsite(data: AddWebsiteData, token?: string): Promise<WebsiteWithStatus> {
+  async addWebsite(
+    data: AddWebsiteData,
+    token?: string,
+  ): Promise<WebsiteWithStatus> {
     return this.request('/website', {
       method: 'POST',
       headers: this.getAuthHeaders(token),
@@ -192,7 +219,10 @@ class ApiClient {
     });
   }
 
-  async deleteWebsite(websiteId: string, token?: string): Promise<{ message: string }> {
+  async deleteWebsite(
+    websiteId: string,
+    token?: string,
+  ): Promise<{ message: string }> {
     return this.request(`/website/${websiteId}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(token),
@@ -206,11 +236,19 @@ class ApiClient {
     });
   }
 
-  async getWebsiteHistory(websiteId: string, limit: number = 50, offset: number = 0, token?: string): Promise<any> {
-    return this.request(`/website/${websiteId}/history?limit=${limit}&offset=${offset}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(token),
-    });
+  async getWebsiteHistory(
+    websiteId: string,
+    limit: number = 50,
+    offset: number = 0,
+    token?: string,
+  ): Promise<any> {
+    return this.request(
+      `/website/${websiteId}/history?limit=${limit}&offset=${offset}`,
+      {
+        method: 'GET',
+        headers: this.getAuthHeaders(token),
+      },
+    );
   }
 
   async getDashboard(token?: string): Promise<DashboardData> {

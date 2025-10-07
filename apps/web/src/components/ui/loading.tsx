@@ -15,10 +15,12 @@ export function Loading({ className, size = 'md', text }: LoadingProps) {
 
   return (
     <div className={cn('flex items-center space-x-3', className)}>
-      <div className={cn(
-        'bg-primary border-2 border-border animate-pulse',
-        sizeClasses[size]
-      )} />
+      <div
+        className={cn(
+          'bg-primary border-2 border-border animate-pulse',
+          sizeClasses[size],
+        )}
+      />
       {text && (
         <span className="text-lg font-bold text-card-foreground font-sans tracking-tight">
           {text}

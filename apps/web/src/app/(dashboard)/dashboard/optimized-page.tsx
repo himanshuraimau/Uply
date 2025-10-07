@@ -6,7 +6,7 @@ import { DashboardStatsComponent } from '@/components/dashboard/dashboard-stats'
 import { OptimizedRecentActivity } from '@/components/dashboard/optimized-recent-activity';
 import { WebsiteList } from '@/components/websites/website-list';
 
-export default function DashboardPage() {
+export default function OptimizedDashboardPage() {
   const { dashboardData, isLoading, error } = useDashboard();
 
   // Use the optimized recent activity hook with initial data from dashboard

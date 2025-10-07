@@ -124,7 +124,11 @@ router.post("/signin", async (req, res) => {
 // Get user profile
 router.get('/profile', authMiddleware, async (req, res) => {
     try {
-        const userId = (req as any).userId;
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -155,7 +159,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
         console.error('Error fetching profile:', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
-            userId: (req as any).userId,
+            userId: req.userId,
             timestamp: new Date().toISOString()
         });
         

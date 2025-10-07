@@ -16,7 +16,9 @@ interface WebsitesContextType {
   retry: () => void;
 }
 
-const WebsitesContext = createContext<WebsitesContextType | undefined>(undefined);
+const WebsitesContext = createContext<WebsitesContextType | undefined>(
+  undefined,
+);
 
 interface WebsitesProviderProps {
   children: ReactNode;

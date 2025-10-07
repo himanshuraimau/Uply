@@ -141,7 +141,9 @@ export default function SignupPage() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         disabled={isLoading}
                       >
                         {showConfirmPassword ? (
@@ -170,8 +172,8 @@ export default function SignupPage() {
         <div className="mt-8 text-center">
           <p className="text-muted-foreground font-sans text-base">
             Already have an account?{' '}
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="font-bold text-primary hover:text-primary/80 uppercase tracking-wide transition-colors"
             >
               Login
@@ -180,8 +182,8 @@ export default function SignupPage() {
         </div>
 
         <div className="mt-6 text-center">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-sm text-muted-foreground hover:text-foreground font-medium uppercase tracking-wide transition-colors"
           >
             ← Back to Home

@@ -13,21 +13,23 @@ interface ErrorDisplayProps {
   className?: string;
 }
 
-export function ErrorDisplay({ 
-  error, 
-  onRetry, 
-  isRetrying = false, 
+export function ErrorDisplay({
+  error,
+  onRetry,
+  isRetrying = false,
   showRetryButton = true,
   variant = 'card',
-  className = ''
+  className = '',
 }: ErrorDisplayProps) {
-  const isNetworkError = error.toLowerCase().includes('network') || 
-                        error.toLowerCase().includes('connection') ||
-                        error.toLowerCase().includes('connect');
-  
-  const isServiceUnavailable = error.toLowerCase().includes('unavailable') ||
-                              error.toLowerCase().includes('service') ||
-                              error.toLowerCase().includes('database');
+  const isNetworkError =
+    error.toLowerCase().includes('network') ||
+    error.toLowerCase().includes('connection') ||
+    error.toLowerCase().includes('connect');
+
+  const isServiceUnavailable =
+    error.toLowerCase().includes('unavailable') ||
+    error.toLowerCase().includes('service') ||
+    error.toLowerCase().includes('database');
 
   const getIcon = () => {
     if (isNetworkError) {
@@ -67,7 +69,9 @@ export function ErrorDisplay({
             size="sm"
             className="mt-3 border-2 border-border font-bold"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`}
+            />
             {isRetrying ? 'RETRYING...' : 'TRY AGAIN'}
           </Button>
         )}
@@ -77,7 +81,9 @@ export function ErrorDisplay({
 
   if (variant === 'inline') {
     return (
-      <div className={`p-4 bg-destructive/10 border-2 border-destructive/20 rounded ${className}`}>
+      <div
+        className={`p-4 bg-destructive/10 border-2 border-destructive/20 rounded ${className}`}
+      >
         {content}
       </div>
     );
@@ -85,7 +91,9 @@ export function ErrorDisplay({
 
   if (variant === 'banner') {
     return (
-      <div className={`p-3 bg-destructive/10 border-l-4 border-destructive ${className}`}>
+      <div
+        className={`p-3 bg-destructive/10 border-l-4 border-destructive ${className}`}
+      >
         {content}
       </div>
     );
@@ -94,9 +102,7 @@ export function ErrorDisplay({
   // Default card variant
   return (
     <Card className={`border-4 border-destructive bg-card ${className}`}>
-      <CardContent className="p-6">
-        {content}
-      </CardContent>
+      <CardContent className="p-6">{content}</CardContent>
     </Card>
   );
 }

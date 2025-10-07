@@ -1,38 +1,39 @@
-import type { Metadata } from "next";
-import { IBM_Plex_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider } from "@/contexts/auth-context";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { Toaster } from "react-hot-toast";
+import type { Metadata } from 'next';
+import { IBM_Plex_Mono } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/contexts/auth-context';
+import { WebSocketProvider } from '@/contexts/websocket-context';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { Toaster } from 'react-hot-toast';
 
 // Futuristic Typography Setup - Design System
 const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  variable: '--font-sans',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['100', '200', '300', '400', '500', '600', '700'],
 });
 
 const ibmPlexMonoMono = IBM_Plex_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  display: "swap", 
-  weight: ["100", "200", "300", "400", "500", "600", "700"],
+  variable: '--font-mono',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['100', '200', '300', '400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
-  title: "UPLY - WEBSITE MONITORING",
+  title: 'UPLY - WEBSITE MONITORING',
   description:
     "Monitor your websites' uptime and performance across multiple regions. Get instant alerts when your sites go down.",
   keywords: [
-    "website monitoring",
-    "uptime monitoring", 
-    "site monitoring",
-    "performance tracking",
-    "downtime alerts",
+    'website monitoring',
+    'uptime monitoring',
+    'site monitoring',
+    'performance tracking',
+    'downtime alerts',
   ],
-  authors: [{ name: "UPLY Team" }],
+  authors: [{ name: 'UPLY Team' }],
 };
 
 export default function RootLayout({
@@ -53,35 +54,37 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <AuthProvider>
-              {children}
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: 'hsl(var(--card))',
-                    color: 'hsl(var(--card-foreground))',
-                    border: '2px solid hsl(var(--border))',
-                    borderRadius: 'var(--radius)',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.025em',
-                  },
-                  success: {
+              <WebSocketProvider>
+                {children}
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
                     style: {
-                      border: '2px solid hsl(var(--primary))',
-                      boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
+                      background: 'hsl(var(--card))',
+                      color: 'hsl(var(--card-foreground))',
+                      border: '2px solid hsl(var(--border))',
+                      borderRadius: 'var(--radius)',
+                      fontFamily: 'var(--font-sans)',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.025em',
                     },
-                  },
-                  error: {
-                    style: {
-                      border: '2px solid hsl(var(--destructive))',
-                      boxShadow: '0 0 12px hsl(var(--destructive) / 0.3)',
+                    success: {
+                      style: {
+                        border: '2px solid hsl(var(--primary))',
+                        boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
+                      },
                     },
-                  },
-                }}
-              />
+                    error: {
+                      style: {
+                        border: '2px solid hsl(var(--destructive))',
+                        boxShadow: '0 0 12px hsl(var(--destructive) / 0.3)',
+                      },
+                    },
+                  }}
+                />
+              </WebSocketProvider>
             </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>

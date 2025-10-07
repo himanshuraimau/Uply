@@ -127,8 +127,8 @@ export default function LoginPage() {
         <div className="mt-8 text-center">
           <p className="text-muted-foreground font-sans text-base">
             Don't have an account?{' '}
-            <Link 
-              href="/signup" 
+            <Link
+              href="/signup"
               className="font-bold text-primary hover:text-primary/80 uppercase tracking-wide transition-colors"
             >
               Sign Up
@@ -137,8 +137,8 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-6 text-center">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-sm text-muted-foreground hover:text-foreground font-medium uppercase tracking-wide transition-colors"
           >
             ← Back to Home

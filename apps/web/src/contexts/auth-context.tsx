@@ -1,8 +1,19 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
 import { apiClient, ApiError } from '@/lib/api';
-import type { AuthContextType, User, LoginData, SignupData } from '@/types/auth';
+import type {
+  AuthContextType,
+  User,
+  LoginData,
+  SignupData,
+} from '@/types/auth';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedToken && storedUser) {
           setToken(storedToken);
-          
+
           // Verify token is still valid by fetching profile
           try {
             const profile = await apiClient.getProfile(storedToken);
@@ -53,14 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       const response = await apiClient.signin(credentials);
-      
+
       // Store auth data
       localStorage.setItem('auth_token', response.jwt);
       localStorage.setItem('auth_user', JSON.stringify(response.user));
-      
+
       setToken(response.jwt);
       setUser(response.user);
-      
+
       toast.success(`Welcome back, ${response.user.username}!`);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -78,15 +89,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       await apiClient.signup(data);
-      
+
       toast.success('Account created successfully! Please log in.');
-      
+
       // Automatically log in after successful signup
       await login({ username: data.username, password: data.password });
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.code === 'USER_EXISTS') {
-          toast.error('Username already exists. Please choose a different username.');
+          toast.error(
+            'Username already exists. Please choose a different username.',
+          );
         } else {
           toast.error(error.message);
         }
@@ -117,11 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

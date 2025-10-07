@@ -11,7 +11,11 @@ interface DashboardStatsProps {
   error?: string | null;
 }
 
-export function DashboardStatsComponent({ stats, isLoading, error }: DashboardStatsProps) {
+export function DashboardStatsComponent({
+  stats,
+  isLoading,
+  error,
+}: DashboardStatsProps) {
   const getUptimeColor = (uptime: number) => {
     if (uptime >= 99) return 'text-secondary-foreground';
     if (uptime >= 95) return 'text-accent-foreground';
@@ -56,7 +60,11 @@ export function DashboardStatsComponent({ stats, isLoading, error }: DashboardSt
       value: getDisplayValue(stats.incidents.toString()),
       icon: AlertTriangle,
       iconColor: 'text-destructive',
-      valueColor: error ? 'text-destructive' : (stats.incidents > 0 ? 'text-destructive' : 'text-card-foreground'),
+      valueColor: error
+        ? 'text-destructive'
+        : stats.incidents > 0
+          ? 'text-destructive'
+          : 'text-card-foreground',
     },
   ];
 
@@ -70,7 +78,9 @@ export function DashboardStatsComponent({ stats, isLoading, error }: DashboardSt
                 <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide">
                   {stat.label}
                 </p>
-                <p className={`text-3xl font-bold font-sans ${stat.valueColor} ${isLoading ? 'animate-pulse' : ''}`}>
+                <p
+                  className={`text-3xl font-bold font-sans ${stat.valueColor} ${isLoading ? 'animate-pulse' : ''}`}
+                >
                   {stat.value}
                 </p>
                 {error && (

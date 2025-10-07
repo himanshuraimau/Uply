@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusIndicator } from '@/components/websites/status-indicator';
 import { Loading } from '@/components/ui/loading';
-import { WebsiteHistory } from '@/components/websites/website-history';
+import { OptimizedWebsiteHistory } from '@/components/websites/optimized-website-history';
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,7 @@ function WebsiteDetailPageContent() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const websiteId = params.id as string;
-  
+
   // Get return URL from search params
   const returnUrl = searchParams.get('return') || '/websites';
 
@@ -49,18 +49,23 @@ function WebsiteDetailPageContent() {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const response = await apiClient.getWebsites(token);
-        const apiWebsite = response.websites.find((w: WebsiteWithStatus) => w.id === websiteId);
-        
+        const apiWebsite = response.websites.find(
+          (w: WebsiteWithStatus) => w.id === websiteId,
+        );
+
         if (!apiWebsite) {
           setError('Website not found');
           return;
         }
-        
+
         setWebsite(apiWebsite);
       } catch (error) {
-        const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch website details';
+        const errorMessage =
+          error instanceof ApiError
+            ? error.message
+            : 'Failed to fetch website details';
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -71,17 +76,58 @@ function WebsiteDetailPageContent() {
     fetchWebsiteDetails();
   }, [websiteId, token]);
 
+  // Listen for real-time WebSocket updates for this specific website
+  useEffect(() => {
+    const handleWebsiteStatus = (event: CustomEvent) => {
+      const statusData = event.detail;
+
+      // Only update if this is for the current website
+      if (statusData.websiteId === websiteId) {
+        console.log('📊 Updating website status in detail page:', statusData);
+
+        setWebsite((prevWebsite) => {
+          if (!prevWebsite) return null;
+
+          return {
+            ...prevWebsite,
+            currentStatus: {
+              id: prevWebsite.currentStatus?.id || `${websiteId}_status`,
+              websiteId: websiteId,
+              status: statusData.status,
+              responseTime: statusData.responseTime,
+              checkedAt: statusData.checkedAt,
+              region: statusData.region,
+            },
+          };
+        });
+      }
+    };
+
+    // Add event listener
+    window.addEventListener(
+      'website:status',
+      handleWebsiteStatus as EventListener,
+    );
+
+    // Cleanup
+    return () => {
+      window.removeEventListener(
+        'website:status',
+        handleWebsiteStatus as EventListener,
+      );
+    };
+  }, [websiteId]);
+
   const handleDelete = async () => {
     if (!website) return;
 
     try {
       setIsDeleting(true);
       await deleteWebsite(website.id, website.url);
-      
+
       // Close dialog and redirect after successful deletion
       setShowDeleteDialog(false);
       router.push(returnUrl);
-      
     } catch (error) {
       // Error is handled by the hook
       console.error('Delete website error:', error);
@@ -152,12 +198,10 @@ function WebsiteDetailPageContent() {
               <h1 className="text-3xl font-bold text-card-foreground mb-2 font-sans tracking-tight">
                 {website.url.replace(/^https?:\/\//, '')}
               </h1>
-              <p className="text-muted-foreground font-mono">
-                {website.url}
-              </p>
+              <p className="text-muted-foreground font-mono">{website.url}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <Button
               variant="outline"
@@ -170,7 +214,7 @@ function WebsiteDetailPageContent() {
             <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
               <DialogTrigger asChild>
                 <Button
-                variant={"destructive"}
+                  variant={'destructive'}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/80 font-semibold"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -183,7 +227,8 @@ function WebsiteDetailPageContent() {
                     DELETE WEBSITE
                   </DialogTitle>
                   <DialogDescription className="text-muted-foreground">
-                    This action cannot be undone. All monitoring data for this website will be permanently removed.
+                    This action cannot be undone. All monitoring data for this
+                    website will be permanently removed.
                   </DialogDescription>
                 </DialogHeader>
 
@@ -231,10 +276,14 @@ function WebsiteDetailPageContent() {
               responseTime={website.currentStatus?.responseTime}
               className="text-lg"
             />
-            
+
             {website.currentStatus?.checkedAt && (
               <p className="text-sm text-muted-foreground font-sans">
-                Last checked {formatDistanceToNow(new Date(website.currentStatus.checkedAt), { addSuffix: true })}
+                Last checked{' '}
+                {formatDistanceToNow(
+                  new Date(website.currentStatus.checkedAt),
+                  { addSuffix: true },
+                )}
               </p>
             )}
           </div>
@@ -294,7 +343,7 @@ function WebsiteDetailPageContent() {
                 {website.url}
               </p>
             </div>
-            
+
             <div>
               <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
                 STATUS
@@ -303,16 +352,18 @@ function WebsiteDetailPageContent() {
                 {website.isActive ? 'Active Monitoring' : 'Monitoring Paused'}
               </p>
             </div>
-            
+
             <div>
               <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
                 ADDED
               </p>
               <p className="text-card-foreground font-sans">
-                {formatDistanceToNow(new Date(website.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(website.createdAt), {
+                  addSuffix: true,
+                })}
               </p>
             </div>
-            
+
             <div>
               <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
                 REGION
@@ -325,8 +376,8 @@ function WebsiteDetailPageContent() {
         </CardContent>
       </Card>
 
-      {/* Monitoring History */}
-      <WebsiteHistory websiteId={websiteId} />
+      {/* Monitoring History with WebSocket updates */}
+      <OptimizedWebsiteHistory websiteId={websiteId} />
     </div>
   );
 }

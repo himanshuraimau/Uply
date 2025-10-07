@@ -2,6 +2,7 @@ import { Server as SocketIOServer, type Socket } from 'socket.io';
 import type { Server as HTTPServer } from 'node:http';
 import jwt from 'jsonwebtoken';
 import { subscribeToWebsiteTicks, type WebsiteTickEvent } from '@uply/redis/client';
+import { prisma } from 'store/client';
 
 interface JWTPayload {
     userId: string;
@@ -24,12 +25,25 @@ interface ServerToClientEvents {
         responseTime: number;
         checkedAt: string;
         region: string;
+        websiteUrl?: string;
     }) => void;
     'website:added': (data: { website: unknown }) => void;
-    'website:deleted': (data: { websiteId: string }) => void;
+    'website:deleted': (data: { websiteId: string; websiteUrl?: string }) => void;
+    'activity:new': (data: {
+        id: string;
+        type: 'STATUS_CHANGE' | 'WEBSITE_ADDED' | 'WEBSITE_REMOVED';
+        websiteId: string;
+        websiteUrl: string;
+        message: string;
+        timestamp: string;
+        status?: 'UP' | 'DOWN';
+    }) => void;
 }
 
 type AuthenticatedSocket = Socket<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
+
+// Type alias for the typed Socket.IO server (exported for use in routes)
+export type TypedSocketIOServer = SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 
 export function setupWebSocket(httpServer: HTTPServer) {
     const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>(httpServer, {
@@ -102,8 +116,22 @@ export function setupWebSocket(httpServer: HTTPServer) {
     });
 
     // Subscribe to Redis pub/sub and broadcast to relevant users
-    subscribeToWebsiteTicks((tickData: WebsiteTickEvent) => {
+    subscribeToWebsiteTicks(async (tickData: WebsiteTickEvent) => {
         const userRoom = `user:${tickData.userId}`;
+        
+        // Get website URL for enhanced context
+        let websiteUrl = `Website ${tickData.websiteId}`;
+        try {
+            const website = await prisma.website.findUnique({
+                where: { id: tickData.websiteId },
+                select: { url: true }
+            });
+            if (website?.url) {
+                websiteUrl = website.url;
+            }
+        } catch (error) {
+            console.warn(`Could not fetch website URL for ${tickData.websiteId}:`, error);
+        }
         
         console.log(`📢 Broadcasting tick to room ${userRoom}:`, {
             websiteId: tickData.websiteId,
@@ -111,13 +139,26 @@ export function setupWebSocket(httpServer: HTTPServer) {
             responseTime: tickData.responseTime
         });
 
-        // Emit to user's room
+        // Emit enhanced website status with URL
         io.to(userRoom).emit('website:status', {
             websiteId: tickData.websiteId,
             status: tickData.status,
             responseTime: tickData.responseTime,
             checkedAt: tickData.checkedAt,
-            region: tickData.region
+            region: tickData.region,
+            websiteUrl: websiteUrl
+        });
+
+        // Emit direct activity event for immediate UI updates
+        const activityId = `status-${tickData.websiteId}-${Date.now()}`;
+        io.to(userRoom).emit('activity:new', {
+            id: activityId,
+            type: 'STATUS_CHANGE',
+            websiteId: tickData.websiteId,
+            websiteUrl: websiteUrl,
+            message: `Website ${websiteUrl} is ${tickData.status.toLowerCase()}`,
+            timestamp: tickData.checkedAt,
+            status: tickData.status
         });
     });
 
@@ -129,34 +170,60 @@ export function setupWebSocket(httpServer: HTTPServer) {
 
 // Helper function to emit website added event
 export function emitWebsiteAdded(
-    io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>, 
-    userId: string | undefined, 
-    website: unknown
-) {
-    // Skip if no userId
-    if (!userId) {
-        console.log('⚠️ Cannot emit website:added event, userId is undefined');
-        return;
-    }
-    
+    io: TypedSocketIOServer,
+    userId: string,
+    website: { id: string; url: string; createdAt?: string; [key: string]: unknown }
+): void {
     const userRoom = `user:${userId}`;
     io.to(userRoom).emit('website:added', { website });
-    console.log(`📢 Emitted website:added to ${userRoom}`);
+    
+    // Also emit activity event
+    const activityId = `added-${website.id}-${Date.now()}`;
+    io.to(userRoom).emit('activity:new', {
+        id: activityId,
+        type: 'WEBSITE_ADDED',
+        websiteId: website.id,
+        websiteUrl: website.url,
+        message: `Website ${website.url} was added for monitoring`,
+        timestamp: website.createdAt || new Date().toISOString()
+    });
+    
+    console.log(`📢 Emitted website:added and activity:new to ${userRoom}`);
 }
 
 // Helper function to emit website deleted event
-export function emitWebsiteDeleted(
-    io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>, 
-    userId: string | undefined, 
+export async function emitWebsiteDeleted(
+    io: TypedSocketIOServer,
+    userId: string,
     websiteId: string
-) {
-    // Skip if no userId
-    if (!userId) {
-        console.log('⚠️ Cannot emit website:deleted event, userId is undefined');
-        return;
+): Promise<void> {
+    // Get website URL before deletion for activity context
+    let websiteUrl = `Website ${websiteId}`;
+    try {
+        const website = await prisma.website.findUnique({
+            where: { id: websiteId },
+            select: { url: true }
+        });
+        if (website?.url) {
+            websiteUrl = website.url;
+        }
+    } catch (error) {
+        console.warn(`Could not fetch website URL for deletion event ${websiteId}:`, error);
     }
-    
+
     const userRoom = `user:${userId}`;
-    io.to(userRoom).emit('website:deleted', { websiteId });
-    console.log(`📢 Emitted website:deleted to ${userRoom}`);
+    io.to(userRoom).emit('website:deleted', { websiteId, websiteUrl });
+    
+    // Also emit activity event
+    const activityId = `deleted-${websiteId}-${Date.now()}`;
+    io.to(userRoom).emit('activity:new', {
+        id: activityId,
+        type: 'WEBSITE_REMOVED',
+        websiteId: websiteId,
+        websiteUrl: websiteUrl,
+        message: `Website ${websiteUrl} was removed from monitoring`,
+        timestamp: new Date().toISOString()
+    });
+    
+    console.log(`📢 Emitted website:deleted and activity:new to ${userRoom}`);
 }

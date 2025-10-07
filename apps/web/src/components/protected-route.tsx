@@ -20,7 +20,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         <div className="border-4 border-border bg-card p-8">
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-primary border-2 border-border animate-pulse"></div>
-            <span className="text-lg font-bold text-card-foreground">LOADING...</span>
+            <span className="text-lg font-bold text-card-foreground">
+              LOADING...
+            </span>
           </div>
         </div>
       </div>

@@ -8,10 +8,15 @@ const router = Router();
 // Get website status (latest tick)
 router.get("/:websiteId", authMiddleware, async (req, res) => {
     try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
         const { websiteId } = req.params;
         const website = await prisma.website.findFirst({
             where: {
-                user_id: (req as any).userId,
+                user_id: userId,
                 id: websiteId,
             },
             include: {
@@ -38,7 +43,7 @@ router.get("/:websiteId", authMiddleware, async (req, res) => {
         console.error('Error fetching status:', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
-            userId: (req as any).userId,
+            userId: req.userId,
             websiteId: req.params.websiteId,
             timestamp: new Date().toISOString()
         });
@@ -60,7 +65,10 @@ router.get("/:websiteId", authMiddleware, async (req, res) => {
 // Get dashboard overview
 router.get('/', authMiddleware, async (req, res) => {
     try {
-        const userId = (req as any).userId;
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
 
         // Get websites with their latest status
         const websites = await prisma.website.findMany({
@@ -187,7 +195,7 @@ router.get('/', authMiddleware, async (req, res) => {
         console.error('Error fetching dashboard:', {
             error: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
-            userId: (req as any).userId,
+            userId: req.userId,
             timestamp: new Date().toISOString()
         });
         

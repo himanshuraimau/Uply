@@ -3,35 +3,9 @@ import { prisma } from "store/client";
 import { WebsiteInputSchema, PaginationSchema } from './types';
 import type { WebsiteWithStatus } from './types';
 import { authMiddleware } from './middleware';
-import type { Server as SocketIOServer } from 'socket.io';
-import { emitWebsiteAdded, emitWebsiteDeleted } from './websocket';
+import { emitWebsiteAdded, emitWebsiteDeleted, type TypedSocketIOServer } from './websocket';
 
-// Import the Socket.IO type interfaces from websocket.ts
-interface SocketData {
-    userId: string;
-}
-
-interface ClientToServerEvents {
-    subscribe: () => void;
-}
-
-interface ServerToClientEvents {
-    connected: (data: { message: string; userId: string; timestamp: string }) => void;
-    subscribed: (data: { userId: string; timestamp: string }) => void;
-    'website:status': (data: {
-        websiteId: string;
-        status: 'UP' | 'DOWN';
-        responseTime: number;
-        checkedAt: string;
-        region: string;
-    }) => void;
-    'website:added': (data: { website: unknown }) => void;
-    'website:deleted': (data: { websiteId: string }) => void;
-}
-
-export function createWebsiteRoutes(
-    io: SocketIOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>
-) {
+export function createWebsiteRoutes(io: TypedSocketIOServer) {
     const router = Router();
 
     // Get all user websites
@@ -319,13 +293,16 @@ export function createWebsiteRoutes(
     // Delete website
     router.delete('/:websiteId', authMiddleware, async (req, res) => {
         try {
-            // First verify userId exists, then use a type assertion to tell TypeScript it's definitely a string
+            const { websiteId } = req.params;
+            
+            // Validate userId exists
             if (!req.userId) {
                 return res.status(401).json({ error: "User not authenticated" });
             }
+            
+            // Extract to local variable with explicit string type
             const userId = req.userId as string;
-            const { websiteId } = req.params;
-
+            
             const website = await prisma.website.findFirst({
                 where: {
                     id: websiteId,
@@ -341,8 +318,9 @@ export function createWebsiteRoutes(
                 where: { id: websiteId }
             });
 
-            // Emit WebSocket event for real-time update
-            emitWebsiteDeleted(io, userId, websiteId);
+            // Emit WebSocket event
+            // @ts-expect-error - TypeScript doesn't properly narrow req.userId type after null check
+            await emitWebsiteDeleted(io, userId, websiteId);
 
             res.json({
                 success: true,

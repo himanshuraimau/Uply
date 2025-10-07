@@ -35,37 +35,46 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchHistory = useCallback(async (offset: number = 0, append: boolean = false) => {
-    if (!token || !websiteId) return;
+  const fetchHistory = useCallback(
+    async (offset: number = 0, append: boolean = false) => {
+      if (!token || !websiteId) return;
 
-    try {
-      if (!append) {
-        setIsLoading(true);
-        setError(null);
-      } else {
-        setLoadingMore(true);
-      }
+      try {
+        if (!append) {
+          setIsLoading(true);
+          setError(null);
+        } else {
+          setLoadingMore(true);
+        }
 
-      const response = await apiClient.getWebsiteHistory(websiteId, 20, offset, token);
-      
-      if (append) {
-        setHistory(prev => [...prev, ...response.data]);
-      } else {
-        setHistory(response.data);
+        const response = await apiClient.getWebsiteHistory(
+          websiteId,
+          20,
+          offset,
+          token,
+        );
+
+        if (append) {
+          setHistory((prev) => [...prev, ...response.data]);
+        } else {
+          setHistory(response.data);
+        }
+
+        setHasMore(response.pagination.hasMore);
+      } catch (error) {
+        const errorMessage =
+          error instanceof ApiError ? error.message : 'Failed to fetch history';
+        setError(errorMessage);
+        if (!append) {
+          toast.error(errorMessage);
+        }
+      } finally {
+        setIsLoading(false);
+        setLoadingMore(false);
       }
-      
-      setHasMore(response.pagination.hasMore);
-    } catch (error) {
-      const errorMessage = error instanceof ApiError ? error.message : 'Failed to fetch history';
-      setError(errorMessage);
-      if (!append) {
-        toast.error(errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-      setLoadingMore(false);
-    }
-  }, [websiteId, token]);
+    },
+    [websiteId, token],
+  );
 
   useEffect(() => {
     fetchHistory();
@@ -107,9 +116,7 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
               <h3 className="text-xl font-bold text-destructive mb-2 font-sans tracking-tight">
                 ERROR LOADING HISTORY
               </h3>
-              <p className="text-muted-foreground font-sans">
-                {error}
-              </p>
+              <p className="text-muted-foreground font-sans">{error}</p>
             </div>
             <Button
               onClick={() => fetchHistory()}
@@ -204,12 +211,14 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground font-sans">
-                  {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(item.createdAt), {
+                    addSuffix: true,
+                  })}
                 </p>
               </div>
             </div>
           ))}
-          
+
           {isExpanded && hasMore && (
             <div className="text-center pt-4">
               <Button

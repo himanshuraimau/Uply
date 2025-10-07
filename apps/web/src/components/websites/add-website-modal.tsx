@@ -66,9 +66,7 @@ export function AddWebsiteModal({ trigger }: AddWebsiteModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || defaultTrigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="border-4 border-border bg-card max-w-md">
         <DialogHeader className="border-b-4 border-border pb-4">
           <DialogTitle className="text-2xl font-bold text-card-foreground font-sans tracking-tight">
@@ -78,7 +76,7 @@ export function AddWebsiteModal({ trigger }: AddWebsiteModalProps) {
             Enter the URL of the website you want to monitor for uptime.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="pt-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

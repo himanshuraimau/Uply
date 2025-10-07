@@ -28,7 +28,9 @@ export function WebsiteList() {
             <div className="w-16 h-16 bg-muted border-4 border-border mx-auto flex items-center justify-center animate-pulse">
               <Globe className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground font-sans">Loading websites...</p>
+            <p className="text-muted-foreground font-sans">
+              Loading websites...
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -48,15 +50,11 @@ export function WebsiteList() {
         </CardHeader>
         <CardContent className="p-8">
           <div className="space-y-6">
-            <ErrorDisplay 
-              error={error}
-              onRetry={retry}
-              variant="inline"
-            />
+            <ErrorDisplay error={error} onRetry={retry} variant="inline" />
             <div className="text-center">
-              <AddWebsiteModal 
+              <AddWebsiteModal
                 trigger={
-                  <Button 
+                  <Button
                     size="lg"
                     className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-bold px-8"
                   >
@@ -92,12 +90,13 @@ export function WebsiteList() {
                 NO WEBSITES YET
               </h3>
               <p className="text-muted-foreground font-sans">
-                Add your first website to start monitoring its uptime and performance.
+                Add your first website to start monitoring its uptime and
+                performance.
               </p>
             </div>
-            <AddWebsiteModal 
+            <AddWebsiteModal
               trigger={
-                <Button 
+                <Button
                   size="lg"
                   className="border-4 border-border bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-bold px-8"
                 >

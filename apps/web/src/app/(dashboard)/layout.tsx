@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/protected-route';
 import { useAuth } from '@/contexts/auth-context';
 import { WebsitesProvider } from '@/contexts/websites-context';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ConnectionStatus } from '@/components/connection-status';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, BarChart3, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,11 +25,7 @@ export default function DashboardLayout({
   );
 }
 
-function DashboardLayoutContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
@@ -56,9 +53,11 @@ function DashboardLayoutContent({
             <div className="flex items-center space-x-8">
               <Link href="/dashboard" className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-primary border-2 border-border animate-pulse-slow"></div>
-                <h1 className="text-2xl font-bold text-card-foreground font-sans tracking-wide uppercase">UPLY</h1>
+                <h1 className="text-2xl font-bold text-card-foreground font-sans tracking-wide uppercase">
+                  UPLY
+                </h1>
               </Link>
-              
+
               {/* Navigation */}
               <div className="hidden md:flex items-center space-x-1">
                 {navigation.map((item) => {
@@ -71,7 +70,7 @@ function DashboardLayoutContent({
                         'flex items-center space-x-2 px-4 py-2 border-2 font-bold text-sm uppercase tracking-wide transition-all hover-glow',
                         item.current
                           ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-transparent text-muted-foreground hover:text-card-foreground hover:border-border'
+                          : 'border-transparent text-muted-foreground hover:text-card-foreground hover:border-border',
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -81,11 +80,14 @@ function DashboardLayoutContent({
                 })}
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
+              <ConnectionStatus />
               <div className="flex items-center space-x-2 border-2 border-border px-3 py-2 bg-background">
                 <User className="h-4 w-4" />
-                <span className="font-bold text-sm uppercase">{user?.username}</span>
+                <span className="font-bold text-sm uppercase">
+                  {user?.username}
+                </span>
               </div>
               <ThemeToggle />
               <Button
@@ -115,7 +117,7 @@ function DashboardLayoutContent({
                     'flex items-center space-x-2 px-3 py-2 border-2 border-transparent font-bold text-xs uppercase tracking-wide transition-colors',
                     item.current
                       ? 'border-border bg-background text-foreground'
-                      : 'text-muted-foreground hover:text-card-foreground hover:bg-muted'
+                      : 'text-muted-foreground hover:text-card-foreground hover:bg-muted',
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -128,9 +130,7 @@ function DashboardLayoutContent({
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto px-6 py-8">{children}</main>
     </div>
   );
 }

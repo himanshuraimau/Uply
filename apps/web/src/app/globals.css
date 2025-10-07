@@ -1,56 +1,58 @@
 /* Import futuristic fonts */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700&display=swap");
 
 @import "tailwindcss";
 @import "tw-animate-css";
 
 :root {
   /* Light Mode (Alternative) - Based on Design System */
-  --background: #FAFAFA;
-  --foreground: #0A0A0A;
-  --card: #FFFFFF;
-  --card-foreground: #0A0A0A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0A0A0A;
-  --primary: #00CC6A; /* Tech Green */
-  --primary-foreground: #FFFFFF;
-  --secondary: #E5E5E5;
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #00cc6a; /* Tech Green */
+  --primary-foreground: #ffffff;
+  --secondary: #e5e5e5;
   --secondary-foreground: #333333;
-  --muted: #E5E5E5;
+  --muted: #e5e5e5;
   --muted-foreground: #666666;
-  --accent: #00A8CC; /* Tech Cyan */
-  --accent-foreground: #FFFFFF;
-  --destructive: #E63946;
-  --destructive-foreground: #FFFFFF;
-  --border: #D4D4D4;
-  --input: #FFFFFF;
-  --ring: #00CC6A;
-  --chart-1: #00CC6A;
-  --chart-2: #00A8CC;
-  --chart-3: #0A0A0A;
+  --accent: #00a8cc; /* Tech Cyan */
+  --accent-foreground: #ffffff;
+  --destructive: #e63946;
+  --destructive-foreground: #ffffff;
+  --border: #d4d4d4;
+  --input: #ffffff;
+  --ring: #00cc6a;
+  --chart-1: #00cc6a;
+  --chart-2: #00a8cc;
+  --chart-3: #0a0a0a;
   --chart-4: #666666;
-  --chart-5: #E63946;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #0A0A0A;
-  --sidebar-primary: #00CC6A;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #00A8CC;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #E5E5E5;
-  --sidebar-ring: #00CC6A;
-  
+  --chart-5: #e63946;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0a0a;
+  --sidebar-primary: #00cc6a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #00a8cc;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #00cc6a;
+
   /* Typography - Futuristic monospace primary */
-  --font-sans: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-sans: "IBM Plex Mono", "Courier New", monospace;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono", Consolas,
+    "Liberation Mono", Menlo, monospace;
+
   /* Design System Spacing & Layout */
   --radius: 6px; /* Slightly rounded edges as per design */
   --spacing: 0.25rem;
   --section-padding: 5rem; /* 80px */
-  --block-padding: 3rem; /* 48px */  
+  --block-padding: 3rem; /* 48px */
   --base-padding: 1.5rem; /* 24px */
-  
+
   /* Light Mode Shadows - Subtle */
   --shadow-2xs: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -60,49 +62,49 @@
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.08), 0 10px 10px rgba(0, 0, 0, 0.08);
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
-  
+
   /* Accent glow for light mode */
   --glow-green: rgba(0, 204, 106, 0.15);
   --glow-cyan: rgba(0, 168, 204, 0.15);
-  
+
   --tracking-normal: 0.025em; /* Slightly wider tracking for technical feel */
 }
 
 .dark {
   /* Dark Mode (Primary) - Based on Design System */
   --background: #000000; /* Core Black Background */
-  --foreground: #FFFFFF; /* Primary White Text */
-  --card: #0A0A0A; /* Section Background - Dark Gray */
-  --card-foreground: #FFFFFF;
-  --popover: #0A0A0A;
-  --popover-foreground: #FFFFFF;
-  --primary: #00FF85; /* Neon Green */
+  --foreground: #ffffff; /* Primary White Text */
+  --card: #0a0a0a; /* Section Background - Dark Gray */
+  --card-foreground: #ffffff;
+  --popover: #0a0a0a;
+  --popover-foreground: #ffffff;
+  --primary: #00ff85; /* Neon Green */
   --primary-foreground: #000000;
-  --secondary: #0A0A0A;
-  --secondary-foreground: #CCCCCC; /* Light Gray Secondary */
-  --muted: #0A0A0A;
+  --secondary: #0a0a0a;
+  --secondary-foreground: #cccccc; /* Light Gray Secondary */
+  --muted: #0a0a0a;
   --muted-foreground: #888888; /* Medium Gray Muted */
-  --accent: #3DDCFF; /* Cyan */
+  --accent: #3ddcff; /* Cyan */
   --accent-foreground: #000000;
-  --destructive: #FF3B3B; /* Negative Trend Red */
-  --destructive-foreground: #FFFFFF;
+  --destructive: #ff3b3b; /* Negative Trend Red */
+  --destructive-foreground: #ffffff;
   --border: #333333; /* Subtle border for dark mode */
-  --input: #0A0A0A;
-  --ring: #00FF85;
-  --chart-1: #00FF85;
-  --chart-2: #3DDCFF;
-  --chart-3: #FFFFFF;
+  --input: #0a0a0a;
+  --ring: #00ff85;
+  --chart-1: #00ff85;
+  --chart-2: #3ddcff;
+  --chart-3: #ffffff;
   --chart-4: #888888;
-  --chart-5: #FF3B3B;
-  --sidebar: #0A0A0A;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #00FF85;
+  --chart-5: #ff3b3b;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #00ff85;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #3DDCFF;
+  --sidebar-accent: #3ddcff;
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #333333;
-  --sidebar-ring: #00FF85;
-  
+  --sidebar-ring: #00ff85;
+
   /* Dark Mode Shadows - Glowing Effects */
   --shadow-2xs: 0 0 4px rgba(0, 255, 133, 0.1);
   --shadow-xs: 0 0 6px rgba(0, 255, 133, 0.1);
@@ -112,13 +114,13 @@
   --shadow-lg: 0 0 20px rgba(0, 255, 133, 0.2), 0 10px 15px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 0 24px rgba(0, 255, 133, 0.25), 0 20px 25px rgba(0, 0, 0, 0.3);
   --shadow-2xl: 0 0 32px rgba(0, 255, 133, 0.3), 0 25px 50px rgba(0, 0, 0, 0.5);
-  
+
   /* Neon glow effects for dark mode */
   --glow-green: rgba(0, 255, 133, 0.3);
   --glow-cyan: rgba(61, 220, 255, 0.3);
 }
 
-/* biome-ignore lint/suspicious/noUnknownAtRules: tailwind @theme directive */
+/* biome-ignore lint/suspicious/noUnknownAtRules: Tailwind @theme directive */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -185,7 +187,12 @@ body {
 }
 
 /* Typography - Technical aesthetic */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-sans);
   font-weight: 700;
   letter-spacing: var(--tracking-normal);
@@ -259,7 +266,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dark .tech-card:hover {
-  box-shadow: 0 0 20px var(--glow-green), var(--shadow-lg);
+  box-shadow:
+    0 0 20px var(--glow-green),
+    var(--shadow-lg);
 }
 
 /* Ticker-style elements */
@@ -292,6 +301,8 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 0 10px var(--glow-green);
   }
   to {
-    box-shadow: 0 0 20px var(--glow-green), 0 0 30px var(--glow-green);
+    box-shadow:
+      0 0 20px var(--glow-green),
+      0 0 30px var(--glow-green);
   }
 }

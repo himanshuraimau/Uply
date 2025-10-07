@@ -49,8 +49,12 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
   const handleCardClick = () => {
     // Get current path to know where to return after delete
     const currentPath = window.location.pathname;
-    const returnUrl = currentPath.includes('/dashboard') ? '/dashboard' : '/websites';
-    router.push(`/websites/${website.id}?return=${encodeURIComponent(returnUrl)}`);
+    const returnUrl = currentPath.includes('/dashboard')
+      ? '/dashboard'
+      : '/websites';
+    router.push(
+      `/websites/${website.id}?return=${encodeURIComponent(returnUrl)}`,
+    );
   };
 
   const getUptimeColor = (uptime?: number) => {
@@ -112,7 +116,8 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
                     <span className="font-bold">{website.url}</span>?
                   </p>
                   <p className="text-sm text-muted-foreground font-sans">
-                    This action cannot be undone. All monitoring data for this website will be permanently removed.
+                    This action cannot be undone. All monitoring data for this
+                    website will be permanently removed.
                   </p>
 
                   <div className="flex space-x-3 pt-2">
@@ -149,7 +154,9 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                 UPTIME
               </p>
-              <p className={`text-lg font-bold font-sans ${getUptimeColor(website.uptime)}`}>
+              <p
+                className={`text-lg font-bold font-sans ${getUptimeColor(website.uptime)}`}
+              >
                 {website.uptime ? `${website.uptime.toFixed(1)}%` : 'N/A'}
               </p>
             </div>
@@ -159,14 +166,19 @@ export function WebsiteCard({ website }: WebsiteCardProps) {
                 AVG RESPONSE
               </p>
               <p className="text-lg font-bold text-card-foreground font-sans">
-                {website.avgResponseTime ? `${website.avgResponseTime}ms` : 'N/A'}
+                {website.avgResponseTime
+                  ? `${website.avgResponseTime}ms`
+                  : 'N/A'}
               </p>
             </div>
           </div>
 
           {website.currentStatus?.checkedAt && (
             <p className="text-xs text-muted-foreground font-sans">
-              Last checked {formatDistanceToNow(new Date(website.currentStatus.checkedAt), { addSuffix: true })}
+              Last checked{' '}
+              {formatDistanceToNow(new Date(website.currentStatus.checkedAt), {
+                addSuffix: true,
+              })}
             </p>
           )}
         </div>
