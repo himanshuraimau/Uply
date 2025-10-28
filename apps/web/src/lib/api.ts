@@ -83,7 +83,7 @@ class ApiClient {
             break;
           case 401:
             userFriendlyMessage =
-              'Your session has expired. Please log in again.';
+              errorData.error || 'Invalid credentials. Please check your username and password.';
             break;
           case 403:
             userFriendlyMessage =
