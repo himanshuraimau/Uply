@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -24,13 +18,14 @@ model User {
 
 model Website {
   id        String        @id @default(uuid())
-  url       String        @unique
+  url       String
   timeAdded DateTime      @default(now())
-  isActive  Boolean       @default(true)
-  ticks     WebsiteTick[]
-  user      User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id   String
+  isActive  Boolean       @default(true)
+  user      User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  ticks     WebsiteTick[]
 
+  @@unique([user_id, url])
   @@index([user_id])
   @@index([isActive])
 }
@@ -46,11 +41,11 @@ model WebsiteTick {
   id               String        @id @default(uuid())
   response_time_ms Int
   status           WebsiteStatus
-  website          Website       @relation(fields: [website_id], references: [id], onDelete: Cascade)
   website_id       String
-  region           Region        @relation(fields: [region_id], references: [id], onDelete: Cascade)
   region_id        String
   createdAt        DateTime      @default(now())
+  region           Region        @relation(fields: [region_id], references: [id], onDelete: Cascade)
+  website          Website       @relation(fields: [website_id], references: [id], onDelete: Cascade)
 
   @@index([website_id, createdAt])
   @@index([region_id, createdAt])
