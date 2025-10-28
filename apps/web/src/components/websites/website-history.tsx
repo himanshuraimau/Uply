@@ -54,11 +54,20 @@ export function WebsiteHistory({ websiteId }: WebsiteHistoryProps) {
           token,
         );
 
+        const isHistoryItem = (item: unknown): item is HistoryItem => {
+          if (typeof item !== 'object' || item === null) return false;
+          if (!('status' in item)) return false;
+          const status = (item as { status: unknown }).status;
+          return status === 'UP' || status === 'DOWN';
+        };
+
+        const filteredData = (response.data as unknown[]).filter(isHistoryItem);
         if (append) {
-          setHistory((prev) => [...prev, ...response.data]);
+          setHistory((prev) => [...prev, ...filteredData]);
         } else {
-          setHistory(response.data);
+          setHistory(filteredData);
         }
+
 
         setHasMore(response.pagination.hasMore);
       } catch (error) {
