@@ -3,6 +3,7 @@ import {z} from 'zod';
 export const AuthInputSchema = z.object({
     username: z.string(),
     password: z.string().min(6),
+    email: z.string().email().optional(),
 });
 
 export const WebsiteInputSchema = z.object({

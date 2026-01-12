@@ -33,12 +33,14 @@ router.post("/signup", async (req, res) => {
             data: {
                 username: data.data.username,
                 password: data.data.password,
+                email: data.data.email,
             }
         });
 
         res.status(201).json({
             id: user.id,
             username: user.username,
+            email: user.email,
             message: "User created successfully"
         });
     } catch (error) {
@@ -96,7 +98,8 @@ router.post("/signin", async (req, res) => {
             jwt: token,
             user: {
                 id: user.id,
-                username: user.username
+                username: user.username,
+                email: user.email,
             }
         });
     } catch (error) {
@@ -134,6 +137,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
             select: {
                 id: true,
                 username: true,
+                email: true,
                 createdAt: true,
                 _count: {
                     select: {
@@ -152,6 +156,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
         res.json({
             id: user.id,
             username: user.username,
+            email: user.email,
             createdAt: user.createdAt,
             websiteCount: user._count.websites
         });
@@ -174,6 +179,58 @@ router.get('/profile', authMiddleware, async (req, res) => {
             error: "Failed to fetch profile",
             code: "FETCH_PROFILE_ERROR"
         });
+    }
+});
+
+// Update user profile
+router.put('/profile', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+
+        const data = AuthInputSchema.partial().safeParse(req.body);
+        if (!data.success) {
+            return res.status(400).json({
+                error: "Invalid input",
+                details: data.error
+            });
+        }
+
+        const updateData: any = {};
+        if (data.data.email !== undefined) updateData.email = data.data.email;
+        if (data.data.password !== undefined) updateData.password = data.data.password;
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ error: "No fields to update" });
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: {
+                id: true,
+                username: true,
+                email: true,
+            }
+        });
+
+        res.json({
+            message: "Profile updated successfully",
+            user
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        if (error instanceof Error && error.message.includes('Prisma')) {
+             if (error.message.includes('Unique constraint')) {
+                 return res.status(409).json({
+                     error: "Email already in use",
+                     code: "EMAIL_EXISTS"
+                 });
+             }
+        }
+        res.status(500).json({ error: "Failed to update profile" });
     }
 });
 

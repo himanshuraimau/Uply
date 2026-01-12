@@ -1,7 +1,8 @@
-import { xReadGroup, xAckBulk, publishWebsiteTick } from "@uply/redis/client";
+import { xReadGroup, xAckBulk, publishWebsiteTick, client as redisClient } from "@uply/redis/client";
 import { prisma } from "store/client";
 import axios, { type AxiosError } from "axios";
 import { createServer } from "node:http";
+import { sendAlert } from "./utils/notifier";
 
 const REGION_NAME = process.env.REGION_NAME || "india";
 const WORKER_ID = process.env.WORKER_ID || "0";
@@ -361,7 +362,12 @@ async function fetchWebsite(url: string, websiteId: string, regionId: string, me
                 include: {
                     website: {
                         select: {
-                            user_id: true
+                            user_id: true,
+                            user: {
+                                select: {
+                                    email: true
+                                }
+                            }
                         }
                     },
                     region: {
@@ -373,6 +379,50 @@ async function fetchWebsite(url: string, websiteId: string, regionId: string, me
             });
             
             console.log(`✅ Successfully stored tick for ${url}: ${status} (${responseTime}ms)`);
+
+            // ALERTING LOGIC
+            try {
+                if (redisClient) {
+                    const statusKey = `website:status:${websiteId}`;
+                    const lastStatus = await redisClient.get(statusKey);
+
+                    // Check if status changed
+                    if (lastStatus && lastStatus !== status) {
+                        console.log(`⚠️ Status changed for ${url}: ${lastStatus} -> ${status}`);
+
+                        // If we have an email, send alert
+                        const userEmail = createdTick.website.user.email;
+                        if (userEmail) {
+                            // Debounce logic: Check if we alerted recently for this specific transition
+                            const alertKey = `alert:${websiteId}:${status}`;
+                            const recentAlert = await redisClient.get(alertKey);
+
+                            if (!recentAlert) {
+                                await sendAlert(userEmail, {
+                                    websiteUrl: url,
+                                    websiteId: websiteId,
+                                    status: status,
+                                    responseTime: responseTime,
+                                    timestamp: new Date().toISOString()
+                                });
+
+                                // Set alert cooldown (e.g., don't alert again for same status for 15 mins)
+                                await redisClient.set(alertKey, '1', { EX: 900 });
+                            } else {
+                                console.log(`🔕 Alert suppressed (cooldown) for ${url}`);
+                            }
+                        }
+                    } else if (!lastStatus) {
+                        // First time seeing this website, just set the status
+                        console.log(`📝 Initial status recorded for ${url}: ${status}`);
+                    }
+
+                    // Update current status
+                    await redisClient.set(statusKey, status);
+                }
+            } catch (alertError) {
+                console.error(`❌ Alerting error (non-critical):`, alertError);
+            }
             
             // Publish to Redis pub/sub for real-time updates
             try {

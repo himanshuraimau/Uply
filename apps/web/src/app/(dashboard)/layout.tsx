@@ -42,6 +42,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       icon: Globe,
       current: pathname === '/websites',
     },
+    {
+      name: 'PROFILE',
+      href: '/profile',
+      icon: User,
+      current: pathname === '/profile',
+    },
   ];
 
   return (

@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   username: string;
+  email?: string;
   createdAt?: string;
   websiteCount?: number;
 }
@@ -13,6 +14,7 @@ export interface AuthResponse {
 export interface SignupData {
   username: string;
   password: string;
+  email?: string;
 }
 
 export interface LoginData {
