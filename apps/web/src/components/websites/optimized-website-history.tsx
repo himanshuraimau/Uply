@@ -85,7 +85,11 @@ export const OptimizedWebsiteHistory = memo(function OptimizedWebsiteHistory({
           currentOffset,
           token,
         );
-        const newHistory = data.history || [];
+        // Map raw API history items to HistoryItem type
+        const newHistory = (data.history || []).map(item => ({
+          ...item,
+          status: item.status as 'UP' | 'DOWN',
+        }));
 
         if (reset) {
           setHistory(newHistory);
@@ -148,7 +152,11 @@ export const OptimizedWebsiteHistory = memo(function OptimizedWebsiteHistory({
         setError(null);
 
         const data = await apiClient.getWebsiteHistory(websiteId, 50, 0, token);
-        const newHistory = data.history || [];
+        // Map raw API history items to HistoryItem type
+        const newHistory = (data.history || []).map(item => ({
+          ...item,
+          status: item.status as 'UP' | 'DOWN',
+        }));
 
         setHistory(newHistory);
         setOffset(newHistory.length);
@@ -195,7 +203,7 @@ export const OptimizedWebsiteHistory = memo(function OptimizedWebsiteHistory({
       // Create a new history item from the status update
       const newHistoryItem: HistoryItem = {
         id: `realtime-${statusData.websiteId}-${Date.now()}`,
-        status: statusData.status,
+        status: statusData.status as 'UP' | 'DOWN',
         response_time_ms: statusData.responseTime,
         createdAt: statusData.checkedAt,
         region: {

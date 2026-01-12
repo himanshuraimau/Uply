@@ -22,6 +22,7 @@ export const signupSchema = z
         /^[a-zA-Z0-9_]+$/,
         'Username can only contain letters, numbers, and underscores',
       ),
+    email: z.string().email('Please enter a valid email address').optional().or(z.literal('')),
     password: z
       .string()
       .min(1, 'Password is required')
@@ -33,6 +34,15 @@ export const signupSchema = z
     message: "Passwords don't match",
     path: ['confirmPassword'],
   });
+
+export const profileSchema = z.object({
+  email: z.string().email('Please enter a valid email address').optional().or(z.literal('')),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .optional()
+    .or(z.literal('')),
+});
 
 export const websiteSchema = z.object({
   url: z
@@ -52,3 +62,4 @@ export const websiteSchema = z.object({
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type WebsiteFormData = z.infer<typeof websiteSchema>;
+export type ProfileFormData = z.infer<typeof profileSchema>;

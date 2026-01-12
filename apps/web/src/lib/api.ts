@@ -212,6 +212,14 @@ class ApiClient {
     });
   }
 
+  async put(endpoint: string, body: any, token?: string): Promise<any> {
+    return this.request(endpoint, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(token),
+      body: JSON.stringify(body),
+    });
+  }
+
   // Website endpoints
   async getWebsites(
     token?: string,
